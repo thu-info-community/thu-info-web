@@ -1,0 +1,23 @@
+﻿@model UserViewModel
+@{
+    ViewData["Title"] = "Login";
+}
+
+<div class="card">
+    <h1 class="card-header">
+        登录
+    </h1>
+    <form class="card-body" method="post">
+        <div>
+            <p>用户名</p>
+            <input type="text" asp-for="Name"/>
+        </div>
+        <div>
+            <p>密码</p>
+            <input type="password" asp-for="Password" />
+        </div>
+        <div>
+            <button class="btn btn-primary" asp-action="Login">登录</button>
+        </div>
+    </form>
+</div>
