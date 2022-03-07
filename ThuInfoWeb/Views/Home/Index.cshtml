@@ -2,7 +2,21 @@
     ViewData["Title"] = "Home Page";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://docs.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<div>
+    <h2>
+        Hello, @User.Identity.Name !
+    </h2>
+    <div class="container">
+    @if (User.IsInRole("admin"))
+    {
+        <a class="btn-primary btn" asp-action="Announce">管理公告</a>
+    }
+    else
+    {
+        <p>
+            您无权访问管理功能
+        </p>
+    }
+        <a class="btn btn-primary" asp-action="Logout">退出</a>
+    </div>
 </div>

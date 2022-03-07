@@ -8,7 +8,6 @@
 
   <ItemGroup>
     <PackageReference Include="FreeSql.Provider.PostgreSQL" Version="3.0.100" />
-    <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="6.0.2" />
   </ItemGroup>
 
 </Project>

@@ -1,0 +1,70 @@
+﻿@model List<AnnounceViewModel>
+@{
+    ViewData["Title"] = "Announce Page";
+}
+<div class="container">
+    <script>
+          function create(){
+              $.ajax({
+                  type:"POST",
+                  url:"/Home/CreateAnnounce",
+                  data:$("#form1").serialize(),
+                  success:function (result){
+                      alert("创建成功");
+                      document.location.reload();
+                  },
+                  error:function (resp){
+                      alert("错误："+resp);
+                  }
+              });
+          }
+      </script>
+     <form method="post" id="form1">
+         <div class="text">
+             发布公告
+         </div>
+      <div class="mb-3">
+        <label for="titleinput" class="form-label">标题</label>
+        <input type="text" name="title" class="form-control" id="titleinput">
+      </div>
+      <div class="mb-3">
+        <label for="contentinput" class="form-label">内容</label>
+        <input type="text" name="content" class="form-control" id="contentinput">
+      </div>
+      <button type="button" onclick="create()" class="btn btn-primary">发布</button>
+    </form>
+   <table class="table">
+      <thead>
+        <tr>
+          <th scope="col">ID</th>
+          <th scope="col">标题</th>
+          <th scope="col">内容</th>
+          <th scope="col">作者</th>
+          <th scope="col">创建时间</th>
+          <th scope="col">操作</th>
+        </tr>
+      </thead>
+      <tbody>
+            @foreach(var item in Model)
+            {
+                <tr>
+                    <th scope="row">@item.Id</th>
+                    <td>@item.Title</td>
+                    <td>@item.Content</td>
+                    <td>@item.Author</td>
+                    <td>@item.CreatedTime</td>
+                    <td>
+                        <a class="btn btn-link" asp-action="DeleteAnnounce" asp-route-id="@item.Id">删除</a>
+                    </td>
+                </tr>
+            }
+      </tbody>
+    </table>
+    <div>
+        @if ((int)ViewData["page"] != 1)
+        {
+            <a class="btn btn-primary" asp-action="Announce" asp-route-page='@((int)ViewData["page"]-1)'>上一页</a>
+        }
+        <a class="btn-primary btn" asp-action="Announce" asp-route-page='@((int)ViewData["page"]+1)'>下一页</a>
+    </div>
+</div>

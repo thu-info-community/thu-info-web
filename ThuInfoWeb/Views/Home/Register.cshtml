@@ -1,11 +1,10 @@
-﻿@model LoginViewModel
+﻿@model RegisterViewModel
 @{
-    ViewData["Title"] = "Login";
+    ViewData["Title"] = "Register";
 }
-
 <div class="card">
     <h1 class="card-header">
-        登录
+        注册
     </h1>
     <form class="card-body" method="post">
         <div>
@@ -19,8 +18,8 @@
             <span asp-validation-for="Password" class="text-danger"></span>
         </div>
         <div>
-            <button class="btn btn-primary" asp-action="Login">登录</button>
-            <a asp-action="Register" class="btn btn-link">注册</a>
+            <button class="btn btn-primary" asp-action="Register">注册</button>
+            <a asp-action="Login" class="btn btn-link">登录</a>
         </div>
     </form>
 </div>
