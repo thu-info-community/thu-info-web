@@ -10,7 +10,6 @@ namespace ThuInfoWeb
             _fsql = new FreeSql.FreeSqlBuilder()
                  .UseConnectionString(FreeSql.DataType.PostgreSQL, connectionString)
                  .UseAutoSyncStructure(true)
-                 .UseMonitorCommand(cmd => Console.WriteLine(cmd.CommandText))
                  .Build();
         }
         public async Task<User> GetUserAsync(string name)
