@@ -75,6 +75,27 @@ namespace ThuInfoWeb.Controllers
             await _userManager.DoLogoutAsync();
             return RedirectToAction("Login");
         }
+        [Authorize(Roles = "admin,guest")]
+        public IActionResult ChangePassword() => View();
+        [HttpPost,Authorize(Roles = "admin,guest")]
+        public async Task<IActionResult> ChangePassword(ChangePasswordViewModel vm)
+        {
+            if (!ModelState.IsValid) return View(vm);
+            if (HttpContext.User.Identity.Name != vm.Name) BadRequest();
+            if (vm.OldPassword.ToMd5Hex()!=(await _data.GetUserAsync(HttpContext.User.Identity.Name)).PasswordHash)
+            {
+                ModelState.AddModelError(nameof(vm.OldPassword), "旧密码错误");
+                return View(vm);
+            }
+            var result = await _data.ChangeUserPasswordAsync(HttpContext.User.Identity.Name,vm.NewPassword.ToMd5Hex());
+            if (result != 1)
+            {
+                ModelState.AddModelError(nameof(vm.NewPassword), "发生未知错误");
+                return View(vm);
+            }
+            else
+                return RedirectToAction(nameof(Logout));
+        }
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()
@@ -101,7 +122,7 @@ namespace ThuInfoWeb.Controllers
                 Author = a.Author,
                 CreatedTime = a.CreatedTime
 
-            }).Reverse().ToList());
+            }).ToList());
         }
 
         [HttpPost, Authorize(Roles = "admin")]
@@ -126,6 +147,20 @@ namespace ThuInfoWeb.Controllers
             var result = await _data.DeleteAnnounceAsync(id);
             if (result != 1) return NotFound();
             else return RedirectToAction("Announce");
+        }
+        [Authorize(Roles = "admin")]
+        public IActionResult Feedback([FromQuery] int? page)
+        {
+            ViewData["page"] = page ?? 1;
+            return View();
+        }
+        [HttpPost,Authorize(Roles ="admin")]
+        public async Task<IActionResult> FeedbackReply([FromRoute]int id,[FromForm]string reply)
+        {
+            if (string.IsNullOrWhiteSpace(reply)) return BadRequest(new { msg = "reply is null" });
+            var result = await _data.ReplyFeedbackAsync(id, reply);
+            if (result != 1) return BadRequest(new { msg = "unkown error" });
+            else return Ok();
         }
     }
 }

@@ -25,9 +25,13 @@ namespace ThuInfoWeb
             if (await _fsql.Select<User>().AnyAsync(x => x.Name == user.Name)) return 0;
             return await _fsql.Insert(user).ExecuteAffrowsAsync();
         }
-        public async Task<Announce> GetAnnounceAsync(int id = 0)
+        public async Task<int> ChangeUserPasswordAsync(string name,string passwordhash)
         {
-            return id == 0
+            return await _fsql.Update<User>().Where(x => x.Name == name).Set(x => x.PasswordHash, passwordhash).ExecuteAffrowsAsync();
+        }
+        public async Task<Announce> GetAnnounceAsync(int? id = null)
+        {
+            return id is null
                 ? await _fsql.Select<Announce>().OrderByDescending(x => x.Id).FirstAsync()
                 : await _fsql.Select<Announce>().Where(x => x.Id == id).ToOneAsync();
         }
@@ -42,6 +46,24 @@ namespace ThuInfoWeb
         public async Task<int> DeleteAnnounceAsync(int id)
         {
             return await _fsql.Delete<Announce>().Where(x => x.Id == id).ExecuteAffrowsAsync();
+        }
+        public async Task<int> CreateFeedbackAsync(Feedback feedback)
+        {
+            return await _fsql.Insert(feedback).ExecuteAffrowsAsync();
+        }
+        public async Task<Feedback> GetFeedbackAsync(int? id = null)
+        {
+            return id is null
+                ? await _fsql.Select<Feedback>().OrderByDescending(x => x.Id).FirstAsync()
+                : await _fsql.Select<Feedback>().Where(x => x.Id == id).ToOneAsync();
+        }
+        public async Task<List<Feedback>> GetFeedbacksAsync(int page,int pageSize)
+        {
+            return await _fsql.Select<Feedback>().OrderByDescending(x => x.Id).Page(page, pageSize).ToListAsync();
+        }
+        public async Task<int> ReplyFeedbackAsync(int id,string reply)
+        {
+            return await _fsql.Update<Feedback>().Where(x => x.Id == id).Set(x => x.Reply, reply).ExecuteAffrowsAsync();
         }
     }
 }

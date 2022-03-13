@@ -1,5 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using ThuInfoWeb.DBModels;
+using ThuInfoWeb.Models;
 
 namespace ThuInfoWeb.Controllers
 {
@@ -23,10 +25,37 @@ namespace ThuInfoWeb.Controllers
             }
             else
             {
-                var a = await _data.GetAnnounceAsync(id ?? 0);
-                if (a is null) return NotFound();
-                else return Ok(a);
+                var a = await _data.GetAnnounceAsync(id);
+                return Ok(a);
+            }
+        }
+        [Route("Feedback"), HttpPost]
+        public async Task<IActionResult> Feedback(FeedbackViewModel vm)
+        {
+            if(!ModelState.IsValid) return BadRequest(ModelState);
+            var feedback = new Feedback()
+            {
+                AppVersion = vm.Content,
+                Content = vm.AppVersion,
+                CreatedTime = DateTime.Now,
+                OS = vm.OS.ToLower()
+            };
+            var result = await _data.CreateFeedbackAsync(feedback);
+            if (result != 1) return BadRequest();
+            else return Created("/Feedback", null);
+        }
+        [Route("Feedback")]
+        public async Task<IActionResult> Feedback([FromQuery]int? id,[FromQuery]int? page)
+        {
+            if(page is not null)
+            {
+                return Ok(await _data.GetFeedbacksAsync(page ?? 0, 5));
+            }
+            else
+            {
+                return Ok(await _data.GetFeedbackAsync(id));
             }
         }
     }
 }
+    

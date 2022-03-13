@@ -38,6 +38,9 @@ app.MapControllerRoute(
 
 app.MapFallbackToFile("/", "index.html");
 app.MapFallbackToFile("/about", "about.html");
+app.MapFallbackToFile("/privacy", "privacy.html");
+app.MapFallbackToFile("/privacy/zh", "privacyzh.html");
+app.MapFallbackToFile("/privacy/en", "privacyen.html");
 app.MapFallback("/deny", async r => await r.Response.WriteAsync("access denied"));
 
 app.Run();

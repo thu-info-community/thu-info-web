@@ -10,6 +10,7 @@
     @if (User.IsInRole("admin"))
     {
         <a class="btn-primary btn" asp-action="Announce">管理公告</a>
+        <a class="btn-primary btn" asp-action="ChangePassword">修改密码</a>
     }
     else
     {
