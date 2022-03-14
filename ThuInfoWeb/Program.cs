@@ -3,7 +3,7 @@ using ThuInfoWeb;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-builder.Services.AddControllersWithViews();
+builder.Services.AddControllersWithViews().AddJsonOptions(x => x.JsonSerializerOptions.AllowTrailingCommas = true);
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddAuthentication("Cookies")
     .AddCookie("Cookies", options =>
@@ -11,7 +11,7 @@ builder.Services.AddAuthentication("Cookies")
         options.LoginPath = new PathString("/Home/Login");
         options.AccessDeniedPath = new PathString("/deny");
     });
-builder.Services.AddSingleton<Data>(new Data(builder.Configuration.GetConnectionString("Test")));
+builder.Services.AddSingleton<Data>(new Data(builder.Configuration.GetConnectionString("Test"), builder.Environment.IsDevelopment()));
 builder.Services.AddScoped<UserManager>();
 
 var app = builder.Build();

@@ -3,22 +3,6 @@
     ViewData["Title"] = "Announce Page";
 }
 <div class="container">
-    <script>
-          function create(){
-              $.ajax({
-                  type:"POST",
-                  url:"/Home/CreateAnnounce",
-                  data:$("#form1").serialize(),
-                  success:function (result){
-                      alert("创建成功");
-                      document.location.reload();
-                  },
-                  error:function (resp){
-                      alert("错误："+resp);
-                  }
-              });
-          }
-      </script>
      <form method="post" id="form1">
          <div class="text">
              发布公告
@@ -54,7 +38,7 @@
                     <td>@item.Author</td>
                     <td>@item.CreatedTime</td>
                     <td>
-                        <a class="btn btn-link" asp-action="DeleteAnnounce" asp-route-id="@item.Id">删除</a>
+                        <a class="btn btn-link" asp-action="DeleteAnnounce" asp-route-id="@item.Id" asp-route-returnpage="@ViewData["page"]">删除</a>
                     </td>
                 </tr>
             }
@@ -68,3 +52,19 @@
         <a class="btn-primary btn" asp-action="Announce" asp-route-page='@((int)ViewData["page"]+1)'>下一页</a>
     </div>
 </div>
+<script>
+    function create(){
+        $.ajax({
+            type:"POST",
+            url:"/Home/CreateAnnounce",
+            data:$("#form1").serialize(),
+            success:function (result){
+                alert("创建成功");
+                document.location.reload();
+            },
+            error:function (resp){
+                alert("错误："+resp.responseText);
+            }
+        });
+    }
+</script>

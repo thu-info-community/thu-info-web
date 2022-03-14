@@ -12,7 +12,7 @@ namespace ThuInfoWeb.Controllers
         private readonly Data _data;
         private readonly UserManager _userManager;
 
-        public HomeController(ILogger<HomeController> logger, Data data,UserManager userManager)
+        public HomeController(ILogger<HomeController> logger, Data data, UserManager userManager)
         {
             _logger = logger;
             this._data = data;
@@ -34,7 +34,9 @@ namespace ThuInfoWeb.Controllers
             var user = new User()
             {
                 Name = vm.Name,
-                PasswordHash = vm.Password.ToMd5Hex()
+                PasswordHash = vm.Password.ToMd5Hex(),
+                CreatedTime = DateTime.Now,
+                IsAdmin = false
             };
             var result = await _data.CreateUserAsync(user);
             if (result == 1)
@@ -77,17 +79,17 @@ namespace ThuInfoWeb.Controllers
         }
         [Authorize(Roles = "admin,guest")]
         public IActionResult ChangePassword() => View();
-        [HttpPost,Authorize(Roles = "admin,guest")]
+        [HttpPost, Authorize(Roles = "admin,guest")]
         public async Task<IActionResult> ChangePassword(ChangePasswordViewModel vm)
         {
             if (!ModelState.IsValid) return View(vm);
             if (HttpContext.User.Identity.Name != vm.Name) BadRequest();
-            if (vm.OldPassword.ToMd5Hex()!=(await _data.GetUserAsync(HttpContext.User.Identity.Name)).PasswordHash)
+            if (vm.OldPassword.ToMd5Hex() != (await _data.GetUserAsync(HttpContext.User.Identity.Name)).PasswordHash)
             {
                 ModelState.AddModelError(nameof(vm.OldPassword), "旧密码错误");
                 return View(vm);
             }
-            var result = await _data.ChangeUserPasswordAsync(HttpContext.User.Identity.Name,vm.NewPassword.ToMd5Hex());
+            var result = await _data.ChangeUserPasswordAsync(HttpContext.User.Identity.Name, vm.NewPassword.ToMd5Hex());
             if (result != 1)
             {
                 ModelState.AddModelError(nameof(vm.NewPassword), "发生未知错误");
@@ -110,7 +112,7 @@ namespace ThuInfoWeb.Controllers
         }
 
         [Authorize(Roles = "admin")]
-        public async Task<IActionResult> Announce([FromQuery]int page = 1)
+        public async Task<IActionResult> Announce([FromQuery] int page = 1)
         {
             ViewData["page"] = page;
             var list = await _data.GetAnnouncesAsync(page, 10);
@@ -139,27 +141,51 @@ namespace ThuInfoWeb.Controllers
             };
             var result = await _data.CreateAnnounceAsync(a);
             if (result != 1) return BadRequest(ModelState);
-            else return RedirectToAction("Announce");
-        }
-        [Authorize(Roles ="admin")]
-        public async Task<IActionResult> DeleteAnnounce([FromRoute]int id)
-        {
-            var result = await _data.DeleteAnnounceAsync(id);
-            if (result != 1) return NotFound();
-            else return RedirectToAction("Announce");
+            else return CreatedAtAction(nameof(Announce), null);
         }
         [Authorize(Roles = "admin")]
-        public IActionResult Feedback([FromQuery] int? page)
+        public async Task<IActionResult> DeleteAnnounce([FromRoute] int id, [FromQuery] int returnpage)
         {
-            ViewData["page"] = page ?? 1;
-            return View();
+            var result = await _data.DeleteAnnounceAsync(id);
+            if (result != 1) return NoContent();
+            else return RedirectToAction(nameof(Announce), new { page = returnpage });
         }
-        [HttpPost,Authorize(Roles ="admin")]
-        public async Task<IActionResult> FeedbackReply([FromRoute]int id,[FromForm]string reply)
+        [Authorize(Roles = "admin")]
+        public async Task<IActionResult> Feedback([FromQuery] int page = 1)
         {
-            if (string.IsNullOrWhiteSpace(reply)) return BadRequest(new { msg = "reply is null" });
-            var result = await _data.ReplyFeedbackAsync(id, reply);
-            if (result != 1) return BadRequest(new { msg = "unkown error" });
+            var list = (await _data.GetFeedbacksAsync(page, 10)).Select(x =>
+                new FeedbackViewModel()
+                {
+                    AppVersion = x.AppVersion,
+                    Contact = x.Contact,
+                    Content = x.Content,
+                    CreatedTime = x.CreatedTime,
+                    Id = x.Id,
+                    NickName = x.NickName,
+                    OS = x.OS,
+                    Reply = x.Reply,
+                    ReplyerName = x.ReplyerName,
+                }).ToList();
+            ViewData["page"] = page;
+            return View(list);
+        }
+        [Authorize(Roles = "admin")]
+        public async Task<IActionResult> DeleteFeedback([FromRoute] int id, [FromQuery] int returnpage = 1)
+        {
+            var result = await _data.DeleteFeedbackAsync(id);
+            if (result != 1) return NoContent();
+            else return RedirectToAction(nameof(Feedback), new { page = returnpage });
+        }
+        [HttpPost, Authorize(Roles = "admin")]
+        public async Task<IActionResult> ReplyFeedback([FromForm] int id, [FromForm] string reply)
+        {
+            if (string.IsNullOrWhiteSpace(reply))
+            {
+                return BadRequest("回复不能为空");
+            }
+            var user = HttpContext.User.Identity.Name;
+            var result = await _data.ReplyFeedbackAsync(id, reply, user);
+            if (result != 1) return BadRequest("未知错误");
             else return Ok();
         }
     }

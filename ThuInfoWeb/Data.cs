@@ -5,12 +5,26 @@ namespace ThuInfoWeb
     public class Data
     {
         private readonly IFreeSql _fsql;
-        public Data(string connectionString)
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="connectionString">the connection string</param>
+        /// <param name="isDevelopment">if env is development, use local sqlite database instead of remote postgresql. The DB file will be created automatically.</param>
+        public Data(string connectionString, bool isDevelopment)
         {
-            _fsql = new FreeSql.FreeSqlBuilder()
-                 .UseConnectionString(FreeSql.DataType.PostgreSQL, connectionString)
-                 .UseAutoSyncStructure(true)
-                 .Build();
+            if (isDevelopment)
+                _fsql = new FreeSql.FreeSqlBuilder()
+                    .UseConnectionString(FreeSql.DataType.Sqlite, "Data Source=test.db")
+                    .UseAutoSyncStructure(true)
+                    .UseNameConvert(FreeSql.Internal.NameConvertType.ToLower)
+                    .UseMonitorCommand(x => Console.WriteLine(x.CommandText))
+                    .Build();
+            else
+                _fsql = new FreeSql.FreeSqlBuilder()
+                     .UseConnectionString(FreeSql.DataType.PostgreSQL, connectionString)
+                     .UseAutoSyncStructure(true)
+                     .UseNameConvert(FreeSql.Internal.NameConvertType.ToLower)
+                     .Build();
         }
         public async Task<User> GetUserAsync(string name)
         {
@@ -25,7 +39,7 @@ namespace ThuInfoWeb
             if (await _fsql.Select<User>().AnyAsync(x => x.Name == user.Name)) return 0;
             return await _fsql.Insert(user).ExecuteAffrowsAsync();
         }
-        public async Task<int> ChangeUserPasswordAsync(string name,string passwordhash)
+        public async Task<int> ChangeUserPasswordAsync(string name, string passwordhash)
         {
             return await _fsql.Update<User>().Where(x => x.Name == name).Set(x => x.PasswordHash, passwordhash).ExecuteAffrowsAsync();
         }
@@ -35,7 +49,7 @@ namespace ThuInfoWeb
                 ? await _fsql.Select<Announce>().OrderByDescending(x => x.Id).FirstAsync()
                 : await _fsql.Select<Announce>().Where(x => x.Id == id).ToOneAsync();
         }
-        public async Task<List<Announce>> GetAnnouncesAsync(int page,int pageSize)
+        public async Task<List<Announce>> GetAnnouncesAsync(int page, int pageSize)
         {
             return await _fsql.Select<Announce>().OrderByDescending(x => x.Id).Page(page, pageSize).ToListAsync();
         }
@@ -57,13 +71,17 @@ namespace ThuInfoWeb
                 ? await _fsql.Select<Feedback>().OrderByDescending(x => x.Id).FirstAsync()
                 : await _fsql.Select<Feedback>().Where(x => x.Id == id).ToOneAsync();
         }
-        public async Task<List<Feedback>> GetFeedbacksAsync(int page,int pageSize)
+        public async Task<List<Feedback>> GetFeedbacksAsync(int page, int pageSize)
         {
             return await _fsql.Select<Feedback>().OrderByDescending(x => x.Id).Page(page, pageSize).ToListAsync();
         }
-        public async Task<int> ReplyFeedbackAsync(int id,string reply)
+        public async Task<int> DeleteFeedbackAsync(int id)
         {
-            return await _fsql.Update<Feedback>().Where(x => x.Id == id).Set(x => x.Reply, reply).ExecuteAffrowsAsync();
+            return await _fsql.Delete<Feedback>().Where(x => x.Id == id).ExecuteAffrowsAsync();
+        }
+        public async Task<int> ReplyFeedbackAsync(int id, string reply, string replyer)
+        {
+            return await _fsql.Update<Feedback>().Where(x => x.Id == id).Set(x => x.Reply, reply).Set(x => x.ReplyerName, replyer).ExecuteAffrowsAsync();
         }
     }
 }
