@@ -64,7 +64,7 @@ namespace ThuInfoWeb.Controllers
         /// </summary>
         /// <param name="id">if entered, return a single value</param>
         /// <param name="page">if entered, return up to 5 values in an array</param>
-        /// <returns></returns>
+        /// <returns>In json format.</returns>
         [Route("Feedback")]
         public async Task<IActionResult> Feedback([FromQuery] int? id, [FromQuery] int? page)
         {
@@ -76,6 +76,20 @@ namespace ThuInfoWeb.Controllers
             {
                 return Ok(await _data.GetFeedbackAsync(id));
             }
+        }
+        /// <summary>
+        /// Get the url content of Wechat group QRCode.
+        /// </summary>
+        /// <returns>The url string, NOT in json format.</returns>
+        [Route("QRCode")]
+        public async Task<IActionResult> QRCode()
+        {
+            return Ok((await _data.GetMiscAsync()).QrCodeContent);
+        }
+        [Route("Socket")]
+        public async Task<IActionResult> Socket([FromQuery] int sectionId)
+        {
+            return Ok(await _data.GetSocketsAsync(sectionId));
         }
     }
 }

@@ -25,6 +25,16 @@ namespace ThuInfoWeb
                      .UseAutoSyncStructure(true)
                      .UseNameConvert(FreeSql.Internal.NameConvertType.ToLower)
                      .Build();
+            if (!_fsql.Select<Misc>().Any())
+                _fsql.Insert(new Misc()).ExecuteAffrows();
+        }
+        public async Task<Misc> GetMiscAsync()
+        {
+            return await _fsql.Select<Misc>().FirstAsync();
+        }
+        public async Task<int> UpdateMiscAsync(Misc misc)
+        {
+            return await _fsql.Update<Misc>().Set(x => x, misc).ExecuteAffrowsAsync();
         }
         public async Task<User> GetUserAsync(string name)
         {
@@ -82,6 +92,10 @@ namespace ThuInfoWeb
         public async Task<int> ReplyFeedbackAsync(int id, string reply, string replyer)
         {
             return await _fsql.Update<Feedback>().Where(x => x.Id == id).Set(x => x.Reply, reply).Set(x => x.ReplyerName, replyer).ExecuteAffrowsAsync();
+        }
+        public async Task<List<Socket>> GetSocketsAsync(int sectionId)
+        {
+            return await _fsql.Select<Socket>().Where(x => x.SectionId == sectionId).ToListAsync();
         }
     }
 }
