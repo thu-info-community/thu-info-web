@@ -1,4 +1,5 @@
 ﻿using ThuInfoWeb.DBModels;
+using Version = ThuInfoWeb.DBModels.Version;
 
 namespace ThuInfoWeb
 {
@@ -96,6 +97,18 @@ namespace ThuInfoWeb
         public async Task<List<Socket>> GetSocketsAsync(int sectionId)
         {
             return await _fsql.Select<Socket>().Where(x => x.SectionId == sectionId).ToListAsync();
+        }
+        public async Task<int> UpdateSocketAsync(int seatId,bool isAvailable)
+        {
+            return await _fsql.Update<Socket>().Where(x => x.SeatId == seatId).Set(x => x.IsAvailable, isAvailable).ExecuteAffrowsAsync();
+        }
+        public async Task<int> CreateVersionAsync(Version version)
+        {
+            return await _fsql.Insert(version).ExecuteAffrowsAsync();
+        }
+        public async Task<Version> GetVersionAsync(bool isAndroid)
+        {
+            return await _fsql.Select<Version>().Where(x => x.IsAndroid == isAndroid).OrderByDescending(x => x.CreatedTime).FirstAsync();
         }
     }
 }

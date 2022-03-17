@@ -1,14 +1,15 @@
-﻿using FreeSql.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
-namespace ThuInfoWeb.DBModels
+namespace ThuInfoWeb.Dtos
 {
-    public class Version
+    public class VersionDto
     {
-        [Column(IsIdentity = true, IsPrimary = true)]
-        public int Id { get; set; }
+        [Required]
         public string VersionName { get; set; }
+        [Required]
         public string ReleaseNote { get; set; }
         public DateTime CreatedTime { get; set; }
+        [Required]
         public bool IsAndroid { get; set; }
     }
 }
