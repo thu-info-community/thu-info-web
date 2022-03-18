@@ -107,7 +107,7 @@ namespace ThuInfoWeb.Controllers
             {
                 DBModels.Socket.SocketStatus.Available => "available",
                 DBModels.Socket.SocketStatus.Unavailable => "unavailable",
-                DBModels.Socket.SocketStatus.Unkown => "unkown"
+                DBModels.Socket.SocketStatus.Unknown => "unknown"
             };
             return Ok((await _data.GetSocketsAsync(sectionId ?? 0)).Select(x => new SocketDto()
             {

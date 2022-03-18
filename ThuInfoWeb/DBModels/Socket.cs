@@ -12,7 +12,7 @@ namespace ThuInfoWeb.DBModels
         public DateTime UpdatedTime { get; set; }
         public enum SocketStatus
         {
-            Unkown,
+            Unknown,
             Available,
             Unavailable
         }

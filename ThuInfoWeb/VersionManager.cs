@@ -74,7 +74,7 @@ namespace ThuInfoWeb
                             VersionName = versionName
                         };
                         var result = await _data.CreateVersionAsync(version);
-                        if (result != 1) throw new Exception("Unkown Error");
+                        if (result != 1) throw new Exception("Unknown Error");
                         else _logger.LogInformation($"Found new version for Android: {versionName}, check update ok");
                     }
                 }
@@ -98,7 +98,7 @@ namespace ThuInfoWeb
                             VersionName = versionName
                         };
                         var result = await _data.CreateVersionAsync(version);
-                        if (result != 1) throw new Exception("Unkown Error");
+                        if (result != 1) throw new Exception("Unknown Error");
                         else _logger.LogInformation($"Found new version for iOS: {versionName}, check update for iOS ok");
                     }
                 }
