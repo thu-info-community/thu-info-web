@@ -95,17 +95,31 @@ namespace ThuInfoWeb.Controllers
         [Route("Apk")]
         public async Task<IActionResult> Apk()
         {
+            // when start for the first time, if the apkurl is null or empty, this will generate an exception, so set an apkurl value as soon as possible.
             return Redirect((await _data.GetMiscAsync())?.ApkUrl);
         }
         [Route("Socket")]
         public async Task<IActionResult> Socket([FromQuery] int sectionId)
         {
-            return Ok(await _data.GetSocketsAsync(sectionId));
+            static string parse(Socket.SocketStatus status) => status switch
+            {
+                DBModels.Socket.SocketStatus.Available => "available",
+                DBModels.Socket.SocketStatus.Unavailable => "unavailable",
+                DBModels.Socket.SocketStatus.Unkown => "unkown"
+            };
+            return Ok((await _data.GetSocketsAsync(sectionId)).Select(x => new SocketDto()
+            {
+                CreatedTime = x.CreatedTime,
+                SeatId = x.SeatId,
+                SectionId = sectionId,
+                UpdatedTime = x.UpdatedTime,
+                Status = parse(x.Status)
+            }).ToList());
         }
         [HttpPost, Route("Socket")]
         public async Task<IActionResult> Socket(SocketDto dto)
         {
-            var result = await _data.UpdateSocketAsync(dto.SeatId ?? 0, dto.IsAvailable ?? false);
+            var result = await _data.UpdateSocketAsync(dto.SeatId ?? 0, dto.IsAvailable);
             if (result != 1) return NoContent();
             else return Ok();
         }
