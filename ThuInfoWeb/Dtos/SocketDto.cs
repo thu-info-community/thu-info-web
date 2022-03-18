@@ -5,8 +5,8 @@ namespace ThuInfoWeb.Dtos
     public class SocketDto
     {
         [Required]
-        public int SeatId { get; set; }
+        public int? SeatId { get; set; }
         [Required]
-        public bool IsAvailable { get; set; }
+        public bool? IsAvailable { get; set; }
     }
 }

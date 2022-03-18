@@ -105,7 +105,7 @@ namespace ThuInfoWeb.Controllers
         [HttpPost, Route("Socket")]
         public async Task<IActionResult> Socket(SocketDto dto)
         {
-            var result = await _data.UpdateSocketAsync(dto.SeatId, dto.IsAvailable);
+            var result = await _data.UpdateSocketAsync(dto.SeatId ?? 0, dto.IsAvailable ?? false);
             if (result != 1) return NoContent();
             else return Ok();
         }
