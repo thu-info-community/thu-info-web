@@ -12,19 +12,19 @@ namespace ThuInfoWeb.Controllers
     public class ApiController : ControllerBase
     {
         private readonly Data _data;
-        private readonly SecretManager _secretManager;
+        private readonly VersionManager _versionManager;
 
-        public ApiController(Data data,SecretManager secretManager)
+        public ApiController(Data data, VersionManager versionManager)
         {
             this._data = data;
-            this._secretManager = secretManager;
+            this._versionManager = versionManager;
         }
         /// <summary>
-        /// Get announce, you should only enter id or page at once.
+        /// Get announce, get the latest announce simply by no query string(just get /api/announce). If needed, you should only enter id or page at one time.
         /// </summary>
         /// <param name="id">if entered, this will return single value</param>
         /// <param name="page">if entered, this will return up to 5 values in an array.</param>
-        /// <returns></returns>
+        /// <returns>In json format.</returns>
         [Route("Announce")]
         public async Task<IActionResult> Announce([FromQuery] int? id, [FromQuery] int? page)
         {
@@ -54,14 +54,15 @@ namespace ThuInfoWeb.Controllers
                 CreatedTime = DateTime.Now,
                 OS = dto.OS.ToLower(),
                 NickName = dto.NickName,
-                Contact = dto.Contact
+                Contact = dto.Contact,
+                PhoneModel = dto.PhoneModel
             };
             var result = await _data.CreateFeedbackAsync(feedback);
             if (result != 1) return BadRequest();
             else return Created("Api/Feedback", null);
         }
         /// <summary>
-        /// Get feedback, you should only enter id or page at once.
+        /// Get feedback, you should only enter id or page at one time.
         /// </summary>
         /// <param name="id">if entered, return a single value</param>
         /// <param name="page">if entered, return up to 5 values in an array</param>
@@ -87,6 +88,10 @@ namespace ThuInfoWeb.Controllers
         {
             return Ok((await _data.GetMiscAsync()).QrCodeContent);
         }
+        /// <summary>
+        /// Redirect to the url ok APK.
+        /// </summary>
+        /// <returns></returns>
         [Route("Apk")]
         public async Task<IActionResult> Apk()
         {
@@ -97,34 +102,40 @@ namespace ThuInfoWeb.Controllers
         {
             return Ok(await _data.GetSocketsAsync(sectionId));
         }
-        [Route("Socket")]
-        public async Task<IActionResult> Socket([FromQuery] int? seatid,[FromQuery]bool? isAvailable)
+        [HttpPost, Route("Socket")]
+        public async Task<IActionResult> Socket(SocketDto dto)
         {
-            if (seatid is null || isAvailable is null) return BadRequest();
-            var result = await _data.UpdateSocketAsync(seatid ?? 0, isAvailable ?? false);
+            var result = await _data.UpdateSocketAsync(dto.SeatId, dto.IsAvailable);
             if (result != 1) return NoContent();
             else return Ok();
         }
-        [Route("Version")]
-        public async Task<IActionResult> Version([FromRoute]string os)
+        [Route("Version/{os}")]
+        public IActionResult Version([FromRoute] string os)
         {
-            if (os.ToLower() == "android") return Ok(await _data.GetVersionAsync(true));
-            else return Ok(await _data.GetVersionAsync(false));
+            if (os.ToLower() == "android") return Ok(_versionManager.GetCurrentVersion(VersionManager.OS.Android));
+            else return Ok(_versionManager.GetCurrentVersion(VersionManager.OS.IOS));
         }
-        [Route("Version"),HttpPost]
-        public async Task<IActionResult> Version([FromQuery] string key,VersionDto dto)
-        {
-            if (key != _secretManager.CreateVersionKey) return Forbid();
-            if (!ModelState.IsValid) return BadRequest(ModelState);
-            var result = await _data.CreateVersionAsync(new DBModels.Version()
-            {
-                CreatedTime = DateTime.Now,
-                IsAndroid = dto.IsAndroid,
-                ReleaseNote = dto.ReleaseNote,
-                VersionName = dto.VersionName
-            });
-            if (result != 1) return BadRequest();
-            else return CreatedAtAction("LatestVersion", dto.IsAndroid ? "android" : "ios");
-        }
+        //[Route("LostAndFound")]
+        //public async Task<IActionResult> LostAndFound()
+        //{
+        //    return Ok(await _data.GetUnsolveLostAndFoundsAsync());
+        //}
+        //[HttpPost,Route("LostAndFound/Create")]
+        //public async Task<IActionResult> LostAndFoundCreate(LostAndFoundDto dto)
+        //{
+        //    var time = DateTime.Now;
+        //    var l = new LostAndFound()
+        //    {
+        //        CreatedTime = time,
+        //        UpdatedTime = time,
+        //        IsSolved = false,
+        //        Message = dto.Message,
+        //        SenderId = dto.SenderId,
+        //        TargetId = dto.TargetId,
+        //    };
+        //    var result = await _data.CreateLostAndFoundAsync(l);
+        //    if (result != 1) return BadRequest();
+        //    else return CreatedAtAction(nameof(LostAndFound), null);
+        //}
     }
 }

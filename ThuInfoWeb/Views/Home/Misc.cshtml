@@ -1,0 +1,33 @@
+﻿@model MiscViewModel
+@{
+    ViewData["Title"] = "Misc Page";
+}
+<ol class="list-group list-group-numbered">
+  <li class="list-group-item d-flex justify-content-between align-items-start">
+    <div class="ms-2 me-auto">
+      <div class="fw-bold">加群二维码内容(url)</div>
+      @Model.QrCodeContent
+    </div>
+  </li>
+  <li class="list-group-item d-flex justify-content-between align-items-start">
+    <div class="ms-2 me-auto">
+      <div class="fw-bold">安卓APK下载地址</div>
+      @Model.ApkUrl
+    </div>
+  </li>
+</ol>
+
+<form asp-action="Misc" method="post">
+    <h2>修改</h2>
+    <div class="mb-3">
+    <label class="form-label">加群二维码内容(url)</label>
+    <input asp-for="QrCodeContent" class="form-control" value="@Model.QrCodeContent">
+    <span asp-validation-for="QrCodeContent" class="text-danger"></span>
+  </div>
+  <div class="mb-3">
+    <label class="form-label">安卓APK下载地址</label>
+    <input asp-for="ApkUrl" class="form-control" value="@Model.ApkUrl">
+    <span asp-validation-for="ApkUrl" class="text-danger"></span>
+  </div>
+  <button type="submit" class="btn btn-primary">提交修改</button>
+</form>

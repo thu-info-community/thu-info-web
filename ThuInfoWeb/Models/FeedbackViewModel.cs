@@ -1,5 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
-using ThuInfoWeb.Dtos;
+﻿using ThuInfoWeb.Dtos;
 
 namespace ThuInfoWeb.Models
 {

@@ -11,12 +11,14 @@ namespace ThuInfoWeb.Controllers
         private readonly ILogger<HomeController> _logger;
         private readonly Data _data;
         private readonly UserManager _userManager;
+        private readonly VersionManager _versionManager;
 
-        public HomeController(ILogger<HomeController> logger, Data data, UserManager userManager)
+        public HomeController(ILogger<HomeController> logger, Data data, UserManager userManager, VersionManager versionManager)
         {
-            _logger = logger;
+            this._logger = logger;
             this._data = data;
             this._userManager = userManager;
+            this._versionManager = versionManager;
         }
         public IActionResult Register()
         {
@@ -96,7 +98,10 @@ namespace ThuInfoWeb.Controllers
                 return View(vm);
             }
             else
-                return RedirectToAction(nameof(Logout));
+            {
+                await _userManager.DoLogoutAsync();
+                return RedirectToAction(nameof(Login));
+            }
         }
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
@@ -187,6 +192,36 @@ namespace ThuInfoWeb.Controllers
             var result = await _data.ReplyFeedbackAsync(id, reply, user);
             if (result != 1) return BadRequest("未知错误");
             else return Ok();
+        }
+        [Authorize(Roles = "admin")]
+        public async Task<IActionResult> Misc()
+        {
+            var misc = await _data.GetMiscAsync();
+            return View(new MiscViewModel()
+            {
+                ApkUrl = misc.ApkUrl,
+                QrCodeContent = misc.QrCodeContent
+            });
+        }
+        [HttpPost, Authorize(Roles = "admin")]
+        public async Task<IActionResult> Misc(MiscViewModel vm)
+        {
+            if (!ModelState.IsValid) return View(vm);
+            var misc = new Misc()
+            {
+                ApkUrl = vm.ApkUrl,
+                QrCodeContent = vm.QrCodeContent
+            };
+            var result = await _data.UpdateMiscAsync(misc);
+            if (result != 1) return BadRequest();
+            else return RedirectToAction(nameof(Misc));
+        }
+        [Authorize(Roles = "admin"), Route("Home/CheckUpdate/{os}")]
+        public IActionResult CheckUpdate([FromRoute] string os)
+        {
+            if (!_versionManager.IsRunning)
+                _ = _versionManager.CheckUpdateAsync(os.ToLower() == "android" ? VersionManager.OS.Android : VersionManager.OS.IOS);
+            return RedirectToAction(nameof(Index));
         }
     }
 }

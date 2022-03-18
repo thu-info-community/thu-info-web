@@ -13,6 +13,8 @@ namespace ThuInfoWeb.Dtos
         public string OS { get; set; }
         [Required]
         public string AppVersion { get; set; }
+        [Required]
+        public string PhoneModel { get; set; }
         public DateTime CreatedTime { get; set; }
         public string Reply { get; set; } = string.Empty;
         public string ReplyerName { get; set; } = string.Empty;

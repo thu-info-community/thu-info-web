@@ -12,7 +12,8 @@ builder.Services.AddAuthentication("Cookies")
         options.AccessDeniedPath = new PathString("/deny");
     });
 builder.Services.AddSingleton<Data>(new Data(builder.Configuration.GetConnectionString("Test"), builder.Environment.IsDevelopment()));
-builder.Services.AddSingleton<SecretManager>(new SecretManager(builder.Configuration["CreateVersionKey"]));
+// builder.Services.AddSingleton<SecretManager>();
+builder.Services.AddSingleton<VersionManager>();
 builder.Services.AddScoped<UserManager>();
 
 var app = builder.Build();
@@ -27,9 +28,7 @@ if (!app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
-
 app.UseRouting();
-
 app.UseAuthentication();
 app.UseAuthorization();
 

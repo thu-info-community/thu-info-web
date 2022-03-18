@@ -1,4 +1,5 @@
-﻿@{
+﻿@inject VersionManager _versionManager
+@{
     ViewData["Title"] = "Home Page";
 }
 
@@ -7,18 +8,55 @@
         Hello, @User.Identity.Name !
     </h2>
     <div class="container">
-    @if (User.IsInRole("admin"))
-    {
-        <a class="btn-primary btn" asp-action="Announce">管理公告</a>
-        <a class="btn-primary btn" asp-action="Feedback">管理反馈</a>
-        <a class="btn-primary btn" asp-action="ChangePassword">修改密码</a>
-    }
-    else
-    {
-        <p>
-            您无权访问管理功能
-        </p>
-    }
+        @if(User.IsInRole("admin"))
+        {
+            <div class="card" style="width: 18rem;">
+              <div class="card-body">
+                <h5 class="card-title">当前版本信息</h5>
+                <h6 class="card-subtitle mb-2 text-muted">Android</h6>
+                <p class="card-text">@_versionManager.GetCurrentVersion(VersionManager.OS.Android)</p>
+                <h6 class="card-subtitle mb-2 text-muted">iOS</h6>
+                <p class="card-text">@_versionManager.GetCurrentVersion(VersionManager.OS.IOS)</p>
+                <h6 class="card-subtitle mb-2 text-muted">版本检查运行状态</h6>
+                    @if (_versionManager.IsRunning)
+                    {
+                        <p class="card-text  text-danger">运行中</p>
+                    }
+                    else
+                    {
+                        <p class="card-text">未运行</p>
+                    }
+                <a onclick="checkupdate(1)" href="javascript:void(0)" class="card-link">检查Android版本</a>
+                <a onclick="checkupdate(2)" href="javascript:void(0)" class="card-link">检查iOS版本</a>
+              </div>
+            </div>
+            <div>
+                <a class="btn-primary btn" asp-action="Announce">管理公告</a>
+                <a class="btn-primary btn" asp-action="Feedback">管理反馈</a>
+                <a class="btn-primary btn" asp-action="Misc">管理杂项</a>
+                <a class="btn-primary btn" asp-action="ChangePassword">修改密码</a>
+            </div>
+        }
+        else
+        {
+            <p>
+                您无权访问管理功能
+            </p>
+        }
         <a class="btn btn-primary" asp-action="Logout">退出</a>
     </div>
-</div>
+<script>
+    const checkisrunning = @(_versionManager.IsRunning?"true":"false");
+    function checkupdate(os){
+        if(checkisrunning) {
+            alert("版本检查运行中，请稍后刷新再试");
+            return;
+        }
+        if(!confirm("确定要开始检查新版本吗")) return;
+        if(os===1){
+            location.href = "/Home/CheckUpdate/Android";
+        }else{
+            location.href = "/Home/CheckUpdate/iOS";
+        }
+    }
+</script>

@@ -2,11 +2,8 @@
 {
     public class SecretManager
     {
-        public SecretManager(string createVersionKey)
+        public SecretManager()
         {
-            CreateVersionKey = createVersionKey;
         }
-
-        public string CreateVersionKey { get; }
     }
 }
