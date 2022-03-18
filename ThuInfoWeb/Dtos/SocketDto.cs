@@ -7,11 +7,12 @@ namespace ThuInfoWeb.Dtos
     {
         [Required]
         public int? SeatId { get; set; }
+        [Required, JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+        public bool? IsAvailable { get; set; }
         public int SectionId { get; set; }
         public DateTime CreatedTime { get; set; }
         public DateTime UpdatedTime { get; set; }
-        public string Status { get; set; }
-        [Required, JsonIgnore]
-        public bool IsAvailable { get; set; }
+        public string? Status { get; set; }
+        
     }
 }

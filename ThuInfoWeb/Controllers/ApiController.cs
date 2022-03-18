@@ -99,19 +99,21 @@ namespace ThuInfoWeb.Controllers
             return Redirect((await _data.GetMiscAsync())?.ApkUrl);
         }
         [Route("Socket")]
-        public async Task<IActionResult> Socket([FromQuery] int sectionId)
+        public async Task<IActionResult> Socket([FromQuery] int? sectionId)
         {
+            if (sectionId is null)
+                return Ok(new List<SocketDto>());
             static string parse(Socket.SocketStatus status) => status switch
             {
                 DBModels.Socket.SocketStatus.Available => "available",
                 DBModels.Socket.SocketStatus.Unavailable => "unavailable",
                 DBModels.Socket.SocketStatus.Unkown => "unkown"
             };
-            return Ok((await _data.GetSocketsAsync(sectionId)).Select(x => new SocketDto()
+            return Ok((await _data.GetSocketsAsync(sectionId ?? 0)).Select(x => new SocketDto()
             {
                 CreatedTime = x.CreatedTime,
                 SeatId = x.SeatId,
-                SectionId = sectionId,
+                SectionId = x.SectionId,
                 UpdatedTime = x.UpdatedTime,
                 Status = parse(x.Status)
             }).ToList());
@@ -119,7 +121,7 @@ namespace ThuInfoWeb.Controllers
         [HttpPost, Route("Socket")]
         public async Task<IActionResult> Socket(SocketDto dto)
         {
-            var result = await _data.UpdateSocketAsync(dto.SeatId ?? 0, dto.IsAvailable);
+            var result = await _data.UpdateSocketAsync(dto.SeatId ?? 0, dto.IsAvailable ?? false);
             if (result != 1) return NoContent();
             else return Ok();
         }
