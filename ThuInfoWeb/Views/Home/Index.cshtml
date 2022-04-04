@@ -14,9 +14,9 @@
               <div class="card-body">
                 <h5 class="card-title">当前版本信息</h5>
                 <h6 class="card-subtitle mb-2 text-muted">Android</h6>
-                <p class="card-text">@_versionManager.GetCurrentVersion(VersionManager.OS.Android)</p>
+                <p class="card-text">@_versionManager.GetCurrentVersion(VersionManager.OS.Android).VersionName</p>
                 <h6 class="card-subtitle mb-2 text-muted">iOS</h6>
-                <p class="card-text">@_versionManager.GetCurrentVersion(VersionManager.OS.IOS)</p>
+                <p class="card-text">@_versionManager.GetCurrentVersion(VersionManager.OS.IOS).VersionName</p>
                 <h6 class="card-subtitle mb-2 text-muted">版本检查运行状态</h6>
                     @if (_versionManager.IsRunning)
                     {

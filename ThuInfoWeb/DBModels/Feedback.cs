@@ -14,6 +14,7 @@ namespace ThuInfoWeb.DBModels
         public string OS { get; set; }
         public string PhoneModel { get; set; }
         public string Reply { get; set; } = string.Empty;
-        public string ReplyerName { get; set; } = string.Empty;
+        public string ReplierName { get; set; } = string.Empty;
+        public DateTime? RepliedTime { get; set; }
     }
 }

@@ -169,7 +169,8 @@ namespace ThuInfoWeb.Controllers
                     NickName = x.NickName,
                     OS = x.OS,
                     Reply = x.Reply,
-                    ReplyerName = x.ReplyerName,
+                    ReplyerName = x.ReplierName,
+                    RepliedTime = x.RepliedTime
                 }).ToList();
             ViewData["page"] = page;
             return View(list);

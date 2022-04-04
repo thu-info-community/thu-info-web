@@ -77,11 +77,14 @@ namespace ThuInfoWeb
         public async Task<List<Feedback>> GetFeedbacksAsync(int page, int pageSize)
             => await _fsql.Select<Feedback>().OrderByDescending(x => x.Id).Page(page, pageSize).ToListAsync();
 
+        public async Task<List<Feedback>> GetAllRepliedFeedbacksAsync()
+            => await _fsql.Select<Feedback>().Where(x => !string.IsNullOrEmpty(x.Reply)).OrderByDescending(x => x.RepliedTime).ToListAsync();
+
         public async Task<int> DeleteFeedbackAsync(int id)
             => await _fsql.Delete<Feedback>().Where(x => x.Id == id).ExecuteAffrowsAsync();
 
         public async Task<int> ReplyFeedbackAsync(int id, string reply, string replyer)
-            => await _fsql.Update<Feedback>().Where(x => x.Id == id).Set(x => x.Reply, reply).Set(x => x.ReplyerName, replyer).ExecuteAffrowsAsync();
+            => await _fsql.Update<Feedback>().Where(x => x.Id == id).Set(x => x.Reply, reply).Set(x => x.ReplierName, replyer).Set(x => x.RepliedTime, DateTime.Now).ExecuteAffrowsAsync();
 
         public async Task<List<Socket>> GetSocketsAsync(int sectionId)
             => await _fsql.Select<Socket>().Where(x => x.SectionId == sectionId).ToListAsync();

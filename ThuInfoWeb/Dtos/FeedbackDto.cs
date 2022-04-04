@@ -4,7 +4,6 @@ namespace ThuInfoWeb.Dtos
 {
     public class FeedbackDto
     {
-        public int Id { get; set; }
         [Required]
         public string Content { get; set; }
         public string NickName { get; set; } = string.Empty;
@@ -15,8 +14,6 @@ namespace ThuInfoWeb.Dtos
         public string AppVersion { get; set; }
         [Required]
         public string PhoneModel { get; set; }
-        public DateTime CreatedTime { get; set; }
-        public string Reply { get; set; } = string.Empty;
-        public string ReplyerName { get; set; } = string.Empty;
+        
     }
 }

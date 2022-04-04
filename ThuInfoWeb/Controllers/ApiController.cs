@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using ThuInfoWeb.DBModels;
 using ThuInfoWeb.Dtos;
 
@@ -61,23 +62,36 @@ namespace ThuInfoWeb.Controllers
             if (result != 1) return BadRequest();
             else return Created("Api/Feedback", null);
         }
-        /// <summary>
-        /// Get feedback, you should only enter id or page at one time.
-        /// </summary>
-        /// <param name="id">if entered, return a single value</param>
-        /// <param name="page">if entered, return up to 5 values in an array</param>
-        /// <returns>In json format.</returns>
-        [Route("Feedback")]
-        public async Task<IActionResult> Feedback([FromQuery] int? id, [FromQuery] int? page)
+        ///// <summary>
+        ///// Get feedback, you should only enter id or page at one time.
+        ///// </summary>
+        ///// <param name="id">if entered, return a single value</param>
+        ///// <param name="page">if entered, return up to 5 values in an array</param>
+        ///// <returns>In json format.</returns>
+        //[Route("Feedback"), Authorize(Roles = "admin")]
+        //public async Task<IActionResult> Feedback([FromQuery] int? id, [FromQuery] int? page)
+        //{
+        //    if (page is not null)
+        //    {
+        //        return Ok(await _data.GetFeedbacksAsync(page ?? 0, 5));
+        //    }
+        //    else
+        //    {
+        //        return Ok(await _data.GetFeedbackAsync(id));
+        //    }
+        //}
+        [Route("RepliedFeedback")]
+        public async Task<IActionResult> RepliedFeedback()
         {
-            if (page is not null)
-            {
-                return Ok(await _data.GetFeedbacksAsync(page ?? 0, 5));
-            }
-            else
-            {
-                return Ok(await _data.GetFeedbackAsync(id));
-            }
+            return Ok((await _data.GetAllRepliedFeedbacksAsync())
+                .Select(x => new
+                {
+                    content = x.Content,
+                    nickName = x.NickName ?? "",
+                    reply = x.Reply,
+                    replierName = x.ReplierName ?? "",
+                    repliedTime = x.RepliedTime
+                }).ToList());
         }
         /// <summary>
         /// Get the url content of Wechat group QRCode.

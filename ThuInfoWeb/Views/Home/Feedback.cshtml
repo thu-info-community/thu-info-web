@@ -16,6 +16,7 @@
           <th scope="col" style="width:15%;">回复</th>
           <th scope="col">回复者</th>
           <th scope="col">创建时间</th>
+          <th scope="col">回复时间</th>
           <th scope="col">操作</th>
         </tr>
       </thead>
@@ -33,6 +34,7 @@
                     <td>@item.Reply</td>
                     <td>@item.ReplyerName</td>
                     <td>@item.CreatedTime</td>
+                    <td>@item.RepliedTime</td>
                     <td>
                         <a class="btn btn-link" data-bs-toggle="modal" data-bs-target="#replymodal" onclick="startreply(@item.Id)">回复</a>
                         <a class="btn btn-link" asp-action="DeleteFeedback" asp-route-id="@item.Id" asp-route-returnpage="@ViewData["page"]">删除</a>
