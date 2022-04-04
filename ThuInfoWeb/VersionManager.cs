@@ -1,4 +1,5 @@
 ﻿using System.Text.Json.Nodes;
+using ThuInfoWeb.Dtos;
 using Version = ThuInfoWeb.DBModels.Version;
 
 namespace ThuInfoWeb
@@ -43,10 +44,22 @@ namespace ThuInfoWeb
             this._currentVersionOfAndroid = data.GetVersionAsync(true).Result ?? new Version();
             this._currentVersionOfIOS = data.GetVersionAsync(false).Result ?? new Version();
         }
-        public string GetCurrentVersion(OS os) => os switch
+        public VersionDto GetCurrentVersion(OS os) => os switch
         {
-            OS.Android => _currentVersionOfAndroid.VersionName,
-            OS.IOS => _currentVersionOfIOS.VersionName
+            OS.Android => new VersionDto
+            {
+                CreatedTime = _currentVersionOfAndroid.CreatedTime,
+                DownloadUrl = "https://thuinfo.net/api/apk",
+                ReleaseNote = _currentVersionOfAndroid.ReleaseNote,
+                VersionName = _currentVersionOfAndroid.VersionName,
+            },
+            OS.IOS => new VersionDto
+            {
+                CreatedTime = _currentVersionOfIOS.CreatedTime,
+                DownloadUrl = "https://apps.apple.com/cn/app/thu-info/id1533968428",
+                ReleaseNote = _currentVersionOfIOS.ReleaseNote,
+                VersionName = _currentVersionOfIOS.VersionName
+            }
         };
         public async Task CheckUpdateAsync(OS os)
         {
