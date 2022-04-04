@@ -124,7 +124,7 @@ namespace ThuInfoWeb.Controllers
             return View(list.Select(a => new AnnounceViewModel()
             {
                 Id = a.Id,
-                Content = a.Cotent,
+                Content = a.Content,
                 Title = a.Title,
                 Author = a.Author,
                 CreatedTime = a.CreatedTime
@@ -140,7 +140,7 @@ namespace ThuInfoWeb.Controllers
             var a = new Announce()
             {
                 Title = vm.Title,
-                Cotent = vm.Content,
+                Content = vm.Content,
                 Author = user,
                 CreatedTime = DateTime.Now
             };
