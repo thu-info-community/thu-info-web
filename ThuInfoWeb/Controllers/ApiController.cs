@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using ThuInfoWeb.Bots;
 using ThuInfoWeb.DBModels;
 using ThuInfoWeb.Dtos;
 
@@ -14,11 +15,13 @@ namespace ThuInfoWeb.Controllers
     {
         private readonly Data _data;
         private readonly VersionManager _versionManager;
+        private readonly FeedbackNoticeBot _feedbackNoticeBot;
 
-        public ApiController(Data data, VersionManager versionManager)
+        public ApiController(Data data, VersionManager versionManager,FeedbackNoticeBot feedbackNoticeBot)
         {
             this._data = data;
             this._versionManager = versionManager;
+            this._feedbackNoticeBot = feedbackNoticeBot;
         }
         /// <summary>
         /// Get announce, get the latest announce simply by no query string(just get /api/announce). If needed, you should only enter id or page at one time.
@@ -54,13 +57,16 @@ namespace ThuInfoWeb.Controllers
                 Content = dto.Content,
                 CreatedTime = DateTime.Now,
                 OS = dto.OS.ToLower(),
-                NickName = dto.NickName,
                 Contact = dto.Contact,
                 PhoneModel = dto.PhoneModel
             };
             var result = await _data.CreateFeedbackAsync(feedback);
             if (result != 1) return BadRequest();
-            else return Created("Api/Feedback", null);
+            else
+            {
+                _ = _feedbackNoticeBot.PushNoticeAsync($"收到新反馈\n{dto.Content}\n请前往https://thuinfo.net/Home/Feedback回复");
+                return Created("Api/Feedback", null);
+            }
         }
         ///// <summary>
         ///// Get feedback, you should only enter id or page at one time.
@@ -87,7 +93,6 @@ namespace ThuInfoWeb.Controllers
                 .Select(x => new
                 {
                     content = x.Content,
-                    nickName = x.NickName ?? "",
                     reply = x.Reply,
                     replierName = x.ReplierName ?? "",
                     repliedTime = x.RepliedTime

@@ -6,7 +6,7 @@ namespace ThuInfoWeb.Dtos
     {
         [Required]
         public string Content { get; set; }
-        public string NickName { get; set; } = string.Empty;
+        [MaxLength(256)]
         public string Contact { get; set; } = string.Empty;
         [Required]
         public string OS { get; set; }

@@ -12,10 +12,12 @@ namespace ThuInfoWeb.DBModels
         /// <summary>
         /// The url data of wechat group qrcode.
         /// </summary>
+        [Column(StringLength = -1)]
         public string QrCodeContent { get; set; }
         /// <summary>
         /// The url of Apk.
         /// </summary>
+        [Column(StringLength = -1)]
         public string ApkUrl { get; set; }
     }
 }

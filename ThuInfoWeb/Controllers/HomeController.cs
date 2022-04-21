@@ -166,7 +166,6 @@ namespace ThuInfoWeb.Controllers
                     Content = x.Content,
                     CreatedTime = x.CreatedTime,
                     Id = x.Id,
-                    NickName = x.NickName,
                     OS = x.OS,
                     Reply = x.Reply,
                     ReplyerName = x.ReplierName,

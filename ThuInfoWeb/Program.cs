@@ -1,4 +1,5 @@
 using ThuInfoWeb;
+using ThuInfoWeb.Bots;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,6 +16,11 @@ builder.Services.AddSingleton<Data>(new Data(builder.Configuration.GetConnection
 // builder.Services.AddSingleton<SecretManager>();
 builder.Services.AddSingleton<VersionManager>();
 builder.Services.AddScoped<UserManager>();
+builder.Services.AddSingleton<FeedbackNoticeBot>(
+    new FeedbackNoticeBot(
+        builder.Configuration["FeishuBots:FeedbackNoticeBot:Url"],
+        builder.Configuration["FeishuBots:FeedbackNoticeBot:Secret"])
+    );
 
 var app = builder.Build();
 
