@@ -167,6 +167,7 @@ namespace ThuInfoWeb.Controllers
                     CreatedTime = x.CreatedTime,
                     Id = x.Id,
                     OS = x.OS,
+                    PhoneModel = x.PhoneModel,
                     Reply = x.Reply,
                     ReplyerName = x.ReplierName,
                     RepliedTime = x.RepliedTime
