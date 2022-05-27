@@ -43,6 +43,7 @@ app.MapControllerRoute(
     pattern: "{controller}/{action}/{id?}");
 
 app.MapFallbackToFile("/", "index.html");
+app.MapFallbackToFile("/download", "download.html");
 app.MapFallbackToFile("/about", "about.html");
 app.MapFallbackToFile("/privacy", "privacy.html");
 app.MapFallbackToFile("/privacy/zh", "privacyzh.html");
