@@ -21,11 +21,14 @@ namespace ThuInfoWeb
             var path = context.Request.Path;
             if (!path.StartsWithSegments("/api"))
             {
+                var ip = context.Connection.RemoteIpAddress;
+                if (ip is null) ip = IPAddress.Parse("0.0.0.0");
+                var ipBytes = ip.GetAddressBytes().Reverse().ToArray();
                 var r = new Request()
                 {
                     Method = context.Request.Method,
                     Path = path,
-                    Ip = (uint)context.Connection.RemoteIpAddress.Address,
+                    Ip = BitConverter.ToUInt32(ipBytes),
                     Time = DateTime.Now
                 };
                 await data.CreateHttpRequestLog(r);
