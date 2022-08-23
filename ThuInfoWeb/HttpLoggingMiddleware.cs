@@ -25,9 +25,7 @@ namespace ThuInfoWeb
                 {
                     Method = context.Request.Method,
                     Path = path,
-                    Ip = BitConverter.ToInt32(
-                        context.Connection.RemoteIpAddress?.GetAddressBytes()
-                        ?? IPAddress.Parse("0.0.0.0").GetAddressBytes()),
+                    Ip = (uint)context.Connection.RemoteIpAddress.Address,
                     Time = DateTime.Now
                 };
                 await data.CreateHttpRequestLog(r);

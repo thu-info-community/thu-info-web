@@ -9,6 +9,6 @@ namespace ThuInfoWeb.DBModels
         public string Method { get; set; }
         public string Path { get; set; }
         public DateTime Time { get; set; }
-        public int Ip { get; set; }
+        public uint Ip { get; set; }
     }
 }
