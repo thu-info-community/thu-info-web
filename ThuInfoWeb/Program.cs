@@ -1,7 +1,11 @@
+using NLog.Web;
 using ThuInfoWeb;
 using ThuInfoWeb.Bots;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Logging.ClearProviders();
+builder.Host.UseNLog();
 
 // Add services to the container.
 builder.Services.AddControllersWithViews().AddJsonOptions(x => x.JsonSerializerOptions.AllowTrailingCommas = true);
@@ -52,3 +56,4 @@ app.MapFallbackToFile("/privacy-en", "privacy-en.html");
 app.MapFallback("/deny", async r => await r.Response.WriteAsync("access denied"));
 
 app.Run();
+NLog.LogManager.Shutdown();
