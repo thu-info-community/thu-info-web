@@ -7,11 +7,11 @@ namespace ThuInfoWeb
     {
         public static string ToMd5Hex(this string s)
         {
-            var data = MD5.HashData(Encoding.ASCII.GetBytes(s));
+            var data = SHA256.HashData(Encoding.ASCII.GetBytes(s));
             string output = "";
             foreach (var b in data)
             {
-                output += b.ToString("x");
+                output += b.ToString("x").PadLeft(2, '0');
             }
             return output;
         }

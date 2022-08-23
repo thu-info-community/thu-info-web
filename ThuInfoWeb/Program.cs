@@ -35,6 +35,7 @@ if (!app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseRouting();
+app.UseHttpLoggingMiddleware(); // log http requests to database
 app.UseAuthentication();
 app.UseAuthorization();
 

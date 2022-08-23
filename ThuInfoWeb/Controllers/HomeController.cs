@@ -224,5 +224,12 @@ namespace ThuInfoWeb.Controllers
                 _ = _versionManager.CheckUpdateAsync(os.ToLower() == "android" ? VersionManager.OS.Android : VersionManager.OS.IOS);
             return RedirectToAction(nameof(Index));
         }
+#if DEBUG
+        [Route("Home/Exception")]
+        public IActionResult Exception()
+        {
+            throw new Exception("Generated exception in DEBUG build");
+        }
+#endif
     }
 }

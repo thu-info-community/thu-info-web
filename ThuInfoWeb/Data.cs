@@ -102,5 +102,7 @@ namespace ThuInfoWeb
             => await _fsql.Select<LostAndFound>().Where(x => !x.IsSolved && (DateTime.Now - x.UpdatedTime).TotalDays <= 3).ToListAsync();
         public async Task<int> CreateLostAndFoundAsync(LostAndFound l)
             => await _fsql.Insert(l).ExecuteAffrowsAsync();
+        public async Task<int> CreateHttpRequestLog(Request r)
+            => await _fsql.Insert(r).ExecuteAffrowsAsync();
     }
 }
