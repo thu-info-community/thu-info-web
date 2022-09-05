@@ -31,7 +31,7 @@ namespace ThuInfoWeb
                     Ip = BitConverter.ToUInt32(ipBytes),
                     Time = DateTime.Now
                 };
-                await data.CreateHttpRequestLog(r);
+                await data.CreateHttpRequestLogAsync(r);
             }
             await _next(context);
         }

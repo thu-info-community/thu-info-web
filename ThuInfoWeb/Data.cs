@@ -108,7 +108,10 @@ namespace ThuInfoWeb
         public async Task<Version> GetVersionAsync(bool isAndroid)
             => await _fsql.Select<Version>().Where(x => x.IsAndroid == isAndroid).OrderByDescending(x => x.CreatedTime).FirstAsync();
 
-        public async Task<int> CreateHttpRequestLog(Request r)
+        public async Task<int> CreateHttpRequestLogAsync(Request r)
             => await _fsql.Insert(r).ExecuteAffrowsAsync();
+
+        public async Task<int> CreateUsageAsync(Usage u)
+            => await _fsql.Insert(u).ExecuteAffrowsAsync();
     }
 }
