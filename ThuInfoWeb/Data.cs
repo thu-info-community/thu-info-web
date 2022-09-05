@@ -57,11 +57,21 @@ namespace ThuInfoWeb
             ? await _fsql.Select<Announce>().OrderByDescending(x => x.Id).FirstAsync()
             : await _fsql.Select<Announce>().Where(x => x.Id == id).ToOneAsync();
 
+        public async Task<Announce> GetActiveAnnounceAsync(int? id = null)
+            => id is null
+            ? await _fsql.Select<Announce>().OrderByDescending(x => x.Id).Where(x => x.IsActive).FirstAsync()
+            : await _fsql.Select<Announce>().Where(x => x.Id == id && x.IsActive).ToOneAsync();
         public async Task<List<Announce>> GetAnnouncesAsync(int page, int pageSize)
             => await _fsql.Select<Announce>().OrderByDescending(x => x.Id).Page(page, pageSize).ToListAsync();
 
+        public async Task<List<Announce>> GetActiveAnnouncesAsync(int page, int pageSize)
+            => await _fsql.Select<Announce>().OrderByDescending(x => x.Id).Page(page, pageSize).Where(x => x.IsActive).ToListAsync();
+
         public async Task<int> CreateAnnounceAsync(Announce a)
             => await _fsql.Insert(a).ExecuteAffrowsAsync();
+
+        public async Task<int> UpdateAnnounceStatusAsync(int id, bool toActive)
+            => await _fsql.Update<Announce>().Where(x => x.Id == id).Set(x => x.IsActive, toActive).ExecuteAffrowsAsync();
 
         public async Task<int> DeleteAnnounceAsync(int id)
             => await _fsql.Delete<Announce>().Where(x => x.Id == id).ExecuteAffrowsAsync();
@@ -98,10 +108,6 @@ namespace ThuInfoWeb
         public async Task<Version> GetVersionAsync(bool isAndroid)
             => await _fsql.Select<Version>().Where(x => x.IsAndroid == isAndroid).OrderByDescending(x => x.CreatedTime).FirstAsync();
 
-        public async Task<List<LostAndFound>> GetUnsolveLostAndFoundsAsync()
-            => await _fsql.Select<LostAndFound>().Where(x => !x.IsSolved && (DateTime.Now - x.UpdatedTime).TotalDays <= 3).ToListAsync();
-        public async Task<int> CreateLostAndFoundAsync(LostAndFound l)
-            => await _fsql.Insert(l).ExecuteAffrowsAsync();
         public async Task<int> CreateHttpRequestLog(Request r)
             => await _fsql.Insert(r).ExecuteAffrowsAsync();
     }

@@ -36,7 +36,7 @@ namespace ThuInfoWeb.Controllers
             var user = new User()
             {
                 Name = vm.Name,
-                PasswordHash = vm.Password.ToMd5Hex(),
+                PasswordHash = vm.Password.ToSHA256Hex(),
                 CreatedTime = DateTime.Now,
                 IsAdmin = false
             };
@@ -63,7 +63,7 @@ namespace ThuInfoWeb.Controllers
             if (!ModelState.IsValid) return View(vm);
             // get the user and check if the password is correct
             var user = await _data.GetUserAsync(vm.Name);
-            if (user is null || vm.Password.ToMd5Hex() != user.PasswordHash)
+            if (user is null || vm.Password.ToSHA256Hex() != user.PasswordHash)
             {
                 ModelState.AddModelError(nameof(vm.Name), "用户名或密码错误");
                 ModelState.AddModelError(nameof(vm.Password), "用户名或密码错误");
@@ -86,12 +86,12 @@ namespace ThuInfoWeb.Controllers
         {
             if (!ModelState.IsValid) return View(vm);
             if (HttpContext.User.Identity.Name != vm.Name) BadRequest();
-            if (vm.OldPassword.ToMd5Hex() != (await _data.GetUserAsync(HttpContext.User.Identity.Name)).PasswordHash)
+            if (vm.OldPassword.ToSHA256Hex() != (await _data.GetUserAsync(HttpContext.User.Identity.Name)).PasswordHash)
             {
                 ModelState.AddModelError(nameof(vm.OldPassword), "旧密码错误");
                 return View(vm);
             }
-            var result = await _data.ChangeUserPasswordAsync(HttpContext.User.Identity.Name, vm.NewPassword.ToMd5Hex());
+            var result = await _data.ChangeUserPasswordAsync(HttpContext.User.Identity.Name, vm.NewPassword.ToSHA256Hex());
             if (result != 1)
             {
                 ModelState.AddModelError(nameof(vm.NewPassword), "发生未知错误");
@@ -127,8 +127,8 @@ namespace ThuInfoWeb.Controllers
                 Content = a.Content,
                 Title = a.Title,
                 Author = a.Author,
-                CreatedTime = a.CreatedTime
-
+                CreatedTime = a.CreatedTime,
+                IsActive = a.IsActive
             }).ToList());
         }
 
@@ -142,11 +142,21 @@ namespace ThuInfoWeb.Controllers
                 Title = vm.Title,
                 Content = vm.Content,
                 Author = user,
-                CreatedTime = DateTime.Now
+                CreatedTime = DateTime.Now,
+                IsActive = vm.IsActive
             };
             var result = await _data.CreateAnnounceAsync(a);
             if (result != 1) return BadRequest(ModelState);
             else return CreatedAtAction(nameof(Announce), null);
+        }
+        [Authorize(Roles = "admin")]
+        public async Task<IActionResult> ChangeAnnounceStatus([FromRoute] int id, [FromQuery] int returnpage)
+        {
+            var a = await _data.GetAnnounceAsync(id);
+            if (a is null) return BadRequest("找不到对应公告");
+            var result = await _data.UpdateAnnounceStatusAsync(id, !a.IsActive);
+            if (result != 1) return BadRequest();
+            else return RedirectToAction(nameof(Announce), new { page = returnpage == 0 ? 1 : returnpage });
         }
         [Authorize(Roles = "admin")]
         public async Task<IActionResult> DeleteAnnounce([FromRoute] int id, [FromQuery] int returnpage)

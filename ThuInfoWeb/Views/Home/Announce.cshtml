@@ -25,6 +25,7 @@
           <th scope="col">内容</th>
           <th scope="col">作者</th>
           <th scope="col">创建时间</th>
+          <th scope="col">是否生效</th>
           <th scope="col">操作</th>
         </tr>
       </thead>
@@ -37,8 +38,10 @@
                     <td>@item.Content</td>
                     <td>@item.Author</td>
                     <td>@item.CreatedTime</td>
+                    <td>@item.IsActive</td>
                     <td>
                         <a class="btn btn-link" asp-action="DeleteAnnounce" asp-route-id="@item.Id" asp-route-returnpage="@ViewData["page"]">删除</a>
+                        <a class="btn btn-link" asp-action="ChangeAnnounceStatus" asp-route-id="@item.Id" asp-route-returnpage="@ViewData["page"]">更改状态</a>
                     </td>
                 </tr>
             }

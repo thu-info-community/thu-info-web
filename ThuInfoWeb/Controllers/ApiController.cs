@@ -32,14 +32,16 @@ namespace ThuInfoWeb.Controllers
         [Route("Announce")]
         public async Task<IActionResult> Announce([FromQuery] int? id, [FromQuery] int? page)
         {
+            if (page is not null && page <= 0)
+                return BadRequest("page必须是正整数");
             if (page is not null)
             {
-                var a = await _data.GetAnnouncesAsync(page ?? 0, 5);
+                var a = await _data.GetActiveAnnouncesAsync(page ?? 1, 5);
                 return Ok(a);
             }
             else
             {
-                var a = await _data.GetAnnounceAsync(id);
+                var a = await _data.GetActiveAnnounceAsync(id);
                 return Ok(a);
             }
         }
@@ -141,7 +143,7 @@ namespace ThuInfoWeb.Controllers
         public async Task<IActionResult> Socket(SocketDto dto)
         {
             var result = await _data.UpdateSocketAsync(dto.SeatId ?? 0, dto.IsAvailable ?? false);
-            if (result != 1) return NoContent();
+            if (result != 1) return BadRequest();
             else return Ok();
         }
         [Route("Version/{os}")]
@@ -150,27 +152,5 @@ namespace ThuInfoWeb.Controllers
             if (os.ToLower() == "android") return Ok(_versionManager.GetCurrentVersion(VersionManager.OS.Android));
             else return Ok(_versionManager.GetCurrentVersion(VersionManager.OS.IOS));
         }
-        //[Route("LostAndFound")]
-        //public async Task<IActionResult> LostAndFound()
-        //{
-        //    return Ok(await _data.GetUnsolveLostAndFoundsAsync());
-        //}
-        //[HttpPost,Route("LostAndFound/Create")]
-        //public async Task<IActionResult> LostAndFoundCreate(LostAndFoundDto dto)
-        //{
-        //    var time = DateTime.Now;
-        //    var l = new LostAndFound()
-        //    {
-        //        CreatedTime = time,
-        //        UpdatedTime = time,
-        //        IsSolved = false,
-        //        Message = dto.Message,
-        //        SenderId = dto.SenderId,
-        //        TargetId = dto.TargetId,
-        //    };
-        //    var result = await _data.CreateLostAndFoundAsync(l);
-        //    if (result != 1) return BadRequest();
-        //    else return CreatedAtAction(nameof(LostAndFound), null);
-        //}
     }
 }

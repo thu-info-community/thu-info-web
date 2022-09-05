@@ -5,7 +5,7 @@ namespace ThuInfoWeb
 {
     public static class Extension
     {
-        public static string ToMd5Hex(this string s)
+        public static string ToSHA256Hex(this string s)
         {
             var data = SHA256.HashData(Encoding.ASCII.GetBytes(s));
             string output = "";

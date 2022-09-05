@@ -1,4 +1,6 @@
 ﻿using FreeSql.DataAnnotations;
+using System.Text.Json.Serialization;
+
 namespace ThuInfoWeb.DBModels
 {
     public class Announce
@@ -10,5 +12,7 @@ namespace ThuInfoWeb.DBModels
         public string Content { get; set; }
         public string Author { get; set; }
         public DateTime CreatedTime { get; set; }
+        [JsonIgnore]
+        public bool IsActive { get; set; }
     }
 }

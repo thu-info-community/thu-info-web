@@ -3,11 +3,12 @@
     "ThuInfoWeb": {
       "commandName": "Project",
       "launchBrowser": true,
+      "launchUrl": "home/index",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       },
       "dotnetRunMessages": true,
-      "applicationUrl": "https://localhost:12006;http://localhost:12005"
+      "applicationUrl": "https://localhost:23006;http://localhost:23005"
     },
     "IIS Express": {
       "commandName": "IISExpress",
