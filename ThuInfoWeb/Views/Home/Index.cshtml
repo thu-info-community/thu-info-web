@@ -8,16 +8,16 @@
         Hello, @User.Identity.Name !
     </h2>
     <div class="container">
-        @if(User.IsInRole("admin"))
+        @if (User.IsInRole("admin"))
         {
             <div class="card" style="width: 18rem;">
-              <div class="card-body">
-                <h5 class="card-title">当前版本信息</h5>
-                <h6 class="card-subtitle mb-2 text-muted">Android</h6>
-                <p class="card-text">@_versionManager.GetCurrentVersion(VersionManager.OS.Android).VersionName</p>
-                <h6 class="card-subtitle mb-2 text-muted">iOS</h6>
-                <p class="card-text">@_versionManager.GetCurrentVersion(VersionManager.OS.IOS).VersionName</p>
-                <h6 class="card-subtitle mb-2 text-muted">版本检查运行状态</h6>
+                <div class="card-body">
+                    <h5 class="card-title">当前版本信息</h5>
+                    <h6 class="card-subtitle mb-2 text-muted">Android</h6>
+                    <p class="card-text">@_versionManager.GetCurrentVersion(VersionManager.OS.Android).VersionName</p>
+                    <h6 class="card-subtitle mb-2 text-muted">iOS</h6>
+                    <p class="card-text">@_versionManager.GetCurrentVersion(VersionManager.OS.IOS).VersionName</p>
+                    <h6 class="card-subtitle mb-2 text-muted">版本检查运行状态</h6>
                     @if (_versionManager.IsRunning)
                     {
                         <p class="card-text  text-danger">运行中</p>
@@ -26,9 +26,9 @@
                     {
                         <p class="card-text">未运行</p>
                     }
-                <a onclick="checkupdate(1)" href="javascript:void(0)" class="card-link">检查Android版本</a>
-                <a onclick="checkupdate(2)" href="javascript:void(0)" class="card-link">检查iOS版本</a>
-              </div>
+                    <a onclick="checkupdate(1)" href="javascript:void(0)" class="card-link">检查Android版本</a>
+                    <a onclick="checkupdate(2)" href="javascript:void(0)" class="card-link">检查iOS版本</a>
+                </div>
             </div>
             <div>
                 <a class="btn-primary btn" asp-action="Announce">管理公告</a>
@@ -45,18 +45,19 @@
         }
         <a class="btn btn-primary" asp-action="Logout">退出</a>
     </div>
-<script>
-    const checkisrunning = @(_versionManager.IsRunning?"true":"false");
-    function checkupdate(os){
-        if(checkisrunning) {
-            alert("版本检查运行中，请稍后刷新再试");
-            return;
+    <script>
+        const checkisrunning = @(_versionManager.IsRunning ? "true" : "false");
+        function checkupdate(os){
+            if(checkisrunning) {
+                alert("版本检查运行中，请稍后刷新再试");
+                return;
+            }
+            if(!confirm("确定要开始检查新版本吗")) return;
+            if(os===1){
+                location.href = "/Home/CheckUpdate/Android";
+            }else{
+                location.href = "/Home/CheckUpdate/iOS";
+            }
         }
-        if(!confirm("确定要开始检查新版本吗")) return;
-        if(os===1){
-            location.href = "/Home/CheckUpdate/Android";
-        }else{
-            location.href = "/Home/CheckUpdate/iOS";
-        }
-    }
-</script>
+    </script>
+</div>
