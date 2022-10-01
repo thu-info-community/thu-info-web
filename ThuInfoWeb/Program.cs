@@ -1,6 +1,7 @@
 using NLog.Web;
 using ThuInfoWeb;
 using ThuInfoWeb.Bots;
+using ThuInfoWeb.Hubs;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -25,6 +26,7 @@ builder.Services.AddSingleton<FeedbackNoticeBot>(
         builder.Configuration["FeishuBots:FeedbackNoticeBot:Url"],
         builder.Configuration["FeishuBots:FeedbackNoticeBot:Secret"])
     );
+builder.Services.AddSignalR();
 
 var app = builder.Build();
 
@@ -55,6 +57,7 @@ app.MapFallbackToFile("/help", "help.html");
 app.MapFallbackToFile("/privacy", "privacy.html");
 app.MapFallbackToFile("/privacy-en", "privacy-en.html");
 app.MapFallback("/deny", async r => await r.Response.WriteAsync("access denied"));
+app.MapHub<ScheduleSyncHub>("/schedulesynchub");
 
 app.Run();
 NLog.LogManager.Shutdown();
