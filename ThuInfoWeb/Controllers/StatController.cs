@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ThuInfoWeb.Controllers
@@ -28,6 +28,11 @@ namespace ThuInfoWeb.Controllers
                 return BadRequest();
             else
                 return Ok();
+        }
+        [Route("[action]"),Authorize(Roles = "admin")]
+        public async Task<IActionResult> UsageData()
+        {
+            return Ok(await _data.GetUsageAsync());
         }
     }
 }

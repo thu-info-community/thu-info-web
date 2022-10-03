@@ -113,5 +113,8 @@ namespace ThuInfoWeb
 
         public async Task<int> CreateUsageAsync(Usage u)
             => await _fsql.Insert(u).ExecuteAffrowsAsync();
+        public async Task<Dictionary<Usage.FunctionType, int>> GetUsageAsync()
+            => await _fsql.Select<Usage>().GroupBy(x => x.Function).ToDictionaryAsync(x => x.Count());
+        
     }
 }

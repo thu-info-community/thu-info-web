@@ -70,24 +70,6 @@ namespace ThuInfoWeb.Controllers
                 return Created("Api/Feedback", null);
             }
         }
-        ///// <summary>
-        ///// Get feedback, you should only enter id or page at one time.
-        ///// </summary>
-        ///// <param name="id">if entered, return a single value</param>
-        ///// <param name="page">if entered, return up to 5 values in an array</param>
-        ///// <returns>In json format.</returns>
-        //[Route("Feedback"), Authorize(Roles = "admin")]
-        //public async Task<IActionResult> Feedback([FromQuery] int? id, [FromQuery] int? page)
-        //{
-        //    if (page is not null)
-        //    {
-        //        return Ok(await _data.GetFeedbacksAsync(page ?? 0, 5));
-        //    }
-        //    else
-        //    {
-        //        return Ok(await _data.GetFeedbackAsync(id));
-        //    }
-        //}
         [Route("RepliedFeedback")]
         public async Task<IActionResult> RepliedFeedback()
         {

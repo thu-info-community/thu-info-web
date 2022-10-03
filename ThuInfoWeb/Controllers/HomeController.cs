@@ -234,6 +234,11 @@ namespace ThuInfoWeb.Controllers
                 _ = _versionManager.CheckUpdateAsync(os.ToLower() == "android" ? VersionManager.OS.Android : VersionManager.OS.IOS);
             return RedirectToAction(nameof(Index));
         }
+        [Authorize(Roles = "admin")]
+        public IActionResult Stat()
+        {
+            return View();
+        }
 #if DEBUG
         [Route("Home/Exception")]
         public IActionResult Exception()

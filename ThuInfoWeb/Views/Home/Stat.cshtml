@@ -1,0 +1,26 @@
+﻿<div>
+    <canvas id="chart"></canvas>
+</div>
+<script src="~/lib/Chart.js/chart.min.js"></script>
+<script>
+    fetch("/stat/usagedata").then(res=>{
+        res.json().then(j=>{
+            const data = {
+                datasets:[
+                    {
+                        label:"function usage",
+                        backgroundColor:"rgb(255,90,132)",
+                        borderColor:"rgb(255,99,132)",
+                        data:j
+                    }
+                ]
+            }
+            const config = {
+                type:"line",
+                data:data,
+                options:{}
+            }
+            const chart = new Chart(document.getElementById("chart"),config);
+        })
+    })
+</script>
