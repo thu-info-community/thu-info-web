@@ -1,9 +1,10 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using ThuInfoWeb.DBModels;
 
 namespace ThuInfoWeb.Controllers
 {
-    [Route("[controller]")]
+    [Route("[controller]/[action]")]
     [ApiController]
     public class StatController : ControllerBase
     {
@@ -11,28 +12,51 @@ namespace ThuInfoWeb.Controllers
 
         public StatController(Data data)
         {
-            this._data = data;
+            _data = data;
         }
-        [Route("[action]/{function}")]
+
+        [Route("{function:int}")]
         public async Task<IActionResult> Usage(int function)
         {
-            if (!Enum.IsDefined(typeof(DBModels.Usage.FunctionType), function))
+            if (!Enum.IsDefined(typeof(Usage.FunctionType), function))
                 return BadRequest("功能不存在");
-            var usage = new DBModels.Usage()
+            var usage = new Usage
             {
-                Function = (DBModels.Usage.FunctionType)function,
+                Function = (Usage.FunctionType)function,
                 CreatedTime = DateTime.Now
             };
             var result = await _data.CreateUsageAsync(usage);
             if (result != 1)
                 return BadRequest();
-            else
-                return Ok();
+            return Ok();
         }
-        [Route("[action]"),Authorize(Roles = "admin")]
+
+        [Route(""), Authorize(Roles = "admin")]
         public async Task<IActionResult> UsageData()
         {
             return Ok(await _data.GetUsageAsync());
         }
+
+        public async Task<IActionResult> Startup()
+        {
+            var s = new Startup { CreatedTime = DateTime.Now };
+            var result = await _data.CreateStartupAsync(s);
+            if (result != 1)
+                return BadRequest();
+            return Ok();
+        }
+
+        [Route(""), Authorize(Roles = "admin")]
+        public async Task<IActionResult> StartupData()
+        {
+            return Ok(await _data.GetStartupDataAsync());
+        }
+#if DEBUG
+        public async Task<IActionResult> GenStartupData()
+        {
+            await _data.GenStartupDataAsync();
+            return Ok();
+        }
+#endif
     }
 }

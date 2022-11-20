@@ -23,10 +23,10 @@ namespace ThuInfoWeb
                     .Build();
             else
                 _fsql = new FreeSql.FreeSqlBuilder()
-                     .UseConnectionString(FreeSql.DataType.PostgreSQL, connectionString)
-                     .UseAutoSyncStructure(true)
-                     .UseNameConvert(FreeSql.Internal.NameConvertType.ToLower)
-                     .Build();
+                    .UseConnectionString(FreeSql.DataType.PostgreSQL, connectionString)
+                    .UseAutoSyncStructure(true)
+                    .UseNameConvert(FreeSql.Internal.NameConvertType.ToLower)
+                    .Build();
             // Check if there is a misc record in database, create one if not exist.
             if (!_fsql.Select<Misc>().Any())
                 _fsql.Insert(new Misc()).ExecuteAffrows();
@@ -46,32 +46,36 @@ namespace ThuInfoWeb
 
         public async Task<int> CreateUserAsync(User user)
             => (await _fsql.Select<User>().AnyAsync(x => x.Name == user.Name))
-            ? 0
-            : await _fsql.Insert(user).ExecuteAffrowsAsync();
+                ? 0
+                : await _fsql.Insert(user).ExecuteAffrowsAsync();
 
         public async Task<int> ChangeUserPasswordAsync(string name, string passwordhash)
-            => await _fsql.Update<User>().Where(x => x.Name == name).Set(x => x.PasswordHash, passwordhash).ExecuteAffrowsAsync();
+            => await _fsql.Update<User>().Where(x => x.Name == name).Set(x => x.PasswordHash, passwordhash)
+                .ExecuteAffrowsAsync();
 
         public async Task<Announce> GetAnnounceAsync(int? id = null)
             => id is null
-            ? await _fsql.Select<Announce>().OrderByDescending(x => x.Id).FirstAsync()
-            : await _fsql.Select<Announce>().Where(x => x.Id == id).ToOneAsync();
+                ? await _fsql.Select<Announce>().OrderByDescending(x => x.Id).FirstAsync()
+                : await _fsql.Select<Announce>().Where(x => x.Id == id).ToOneAsync();
 
         public async Task<Announce> GetActiveAnnounceAsync(int? id = null)
             => id is null
-            ? await _fsql.Select<Announce>().OrderByDescending(x => x.Id).Where(x => x.IsActive).FirstAsync()
-            : await _fsql.Select<Announce>().Where(x => x.Id == id && x.IsActive).ToOneAsync();
+                ? await _fsql.Select<Announce>().OrderByDescending(x => x.Id).Where(x => x.IsActive).FirstAsync()
+                : await _fsql.Select<Announce>().Where(x => x.Id == id && x.IsActive).ToOneAsync();
+
         public async Task<List<Announce>> GetAnnouncesAsync(int page, int pageSize)
             => await _fsql.Select<Announce>().OrderByDescending(x => x.Id).Page(page, pageSize).ToListAsync();
 
         public async Task<List<Announce>> GetActiveAnnouncesAsync(int page, int pageSize)
-            => await _fsql.Select<Announce>().OrderByDescending(x => x.Id).Page(page, pageSize).Where(x => x.IsActive).ToListAsync();
+            => await _fsql.Select<Announce>().OrderByDescending(x => x.Id).Page(page, pageSize).Where(x => x.IsActive)
+                .ToListAsync();
 
         public async Task<int> CreateAnnounceAsync(Announce a)
             => await _fsql.Insert(a).ExecuteAffrowsAsync();
 
         public async Task<int> UpdateAnnounceStatusAsync(int id, bool toActive)
-            => await _fsql.Update<Announce>().Where(x => x.Id == id).Set(x => x.IsActive, toActive).ExecuteAffrowsAsync();
+            => await _fsql.Update<Announce>().Where(x => x.Id == id).Set(x => x.IsActive, toActive)
+                .ExecuteAffrowsAsync();
 
         public async Task<int> DeleteAnnounceAsync(int id)
             => await _fsql.Delete<Announce>().Where(x => x.Id == id).ExecuteAffrowsAsync();
@@ -81,40 +85,82 @@ namespace ThuInfoWeb
 
         public async Task<Feedback> GetFeedbackAsync(int? id = null)
             => id is null
-            ? await _fsql.Select<Feedback>().OrderByDescending(x => x.Id).FirstAsync()
-            : await _fsql.Select<Feedback>().Where(x => x.Id == id).ToOneAsync();
+                ? await _fsql.Select<Feedback>().OrderByDescending(x => x.Id).FirstAsync()
+                : await _fsql.Select<Feedback>().Where(x => x.Id == id).ToOneAsync();
 
         public async Task<List<Feedback>> GetFeedbacksAsync(int page, int pageSize)
             => await _fsql.Select<Feedback>().OrderByDescending(x => x.Id).Page(page, pageSize).ToListAsync();
 
         public async Task<List<Feedback>> GetAllRepliedFeedbacksAsync()
-            => await _fsql.Select<Feedback>().Where(x => !string.IsNullOrEmpty(x.Reply)).OrderByDescending(x => x.RepliedTime).ToListAsync();
+            => await _fsql.Select<Feedback>().Where(x => !string.IsNullOrEmpty(x.Reply))
+                .OrderByDescending(x => x.RepliedTime).ToListAsync();
 
         public async Task<int> DeleteFeedbackAsync(int id)
             => await _fsql.Delete<Feedback>().Where(x => x.Id == id).ExecuteAffrowsAsync();
 
         public async Task<int> ReplyFeedbackAsync(int id, string reply, string replyer)
-            => await _fsql.Update<Feedback>().Where(x => x.Id == id).Set(x => x.Reply, reply).Set(x => x.ReplierName, replyer).Set(x => x.RepliedTime, DateTime.Now).ExecuteAffrowsAsync();
+            => await _fsql.Update<Feedback>().Where(x => x.Id == id).Set(x => x.Reply, reply)
+                .Set(x => x.ReplierName, replyer).Set(x => x.RepliedTime, DateTime.Now).ExecuteAffrowsAsync();
 
         public async Task<List<Socket>> GetSocketsAsync(int sectionId)
             => await _fsql.Select<Socket>().Where(x => x.SectionId == sectionId).ToListAsync();
 
         public async Task<int> UpdateSocketAsync(int seatId, bool isAvailable)
-            => await _fsql.Update<Socket>().Where(x => x.SeatId == seatId).Set(x => x.Status, isAvailable ? Socket.SocketStatus.Available : Socket.SocketStatus.Unavailable).ExecuteAffrowsAsync();
+            => await _fsql.Update<Socket>().Where(x => x.SeatId == seatId).Set(x => x.Status,
+                isAvailable ? Socket.SocketStatus.Available : Socket.SocketStatus.Unavailable).ExecuteAffrowsAsync();
 
         public async Task<int> CreateVersionAsync(Version version)
             => await _fsql.Insert(version).ExecuteAffrowsAsync();
 
         public async Task<Version> GetVersionAsync(bool isAndroid)
-            => await _fsql.Select<Version>().Where(x => x.IsAndroid == isAndroid).OrderByDescending(x => x.CreatedTime).FirstAsync();
+            => await _fsql.Select<Version>().Where(x => x.IsAndroid == isAndroid).OrderByDescending(x => x.CreatedTime)
+                .FirstAsync();
 
         public async Task<int> CreateHttpRequestLogAsync(Request r)
             => await _fsql.Insert(r).ExecuteAffrowsAsync();
 
         public async Task<int> CreateUsageAsync(Usage u)
             => await _fsql.Insert(u).ExecuteAffrowsAsync();
+
         public async Task<Dictionary<Usage.FunctionType, int>> GetUsageAsync()
             => await _fsql.Select<Usage>().GroupBy(x => x.Function).ToDictionaryAsync(x => x.Count());
-        
+
+        public async Task<int> CreateStartupAsync(Startup s)
+            => await _fsql.Insert(s).ExecuteAffrowsAsync();
+
+        public async Task<Dictionary<string, int>> GetStartupDataAsync()
+            => await _fsql.Select<Startup>().GroupBy(x => x.CreatedTime.ToString("yyyy MM"))
+                .ToDictionaryAsync(x => x.Count());
+#if DEBUG
+        public async Task GenStartupDataAsync()
+        {
+            var s1 = new Startup()
+            {
+                CreatedTime = DateTime.Now - TimeSpan.FromDays(30)
+            };
+            for (int i = 0; i < 10; i++)
+            {
+                await _fsql.Insert(s1).ExecuteAffrowsAsync();
+            }
+
+            var s2 = new Startup()
+            {
+                CreatedTime = DateTime.Now - TimeSpan.FromDays(60)
+            };
+            for (int i = 0; i < 20; i++)
+            {
+                await _fsql.Insert(s2).ExecuteAffrowsAsync();
+            }
+
+            var s3 = new Startup()
+            {
+                CreatedTime = DateTime.Now - TimeSpan.FromDays(90)
+            };
+            for (int i = 0; i < 30; i++)
+            {
+                await _fsql.Insert(s3).ExecuteAffrowsAsync();
+            }
+        }
+#endif
     }
 }

@@ -11,9 +11,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="FreeSql.Provider.PostgreSQL" Version="3.2.665" />
-    <PackageReference Include="FreeSql.Provider.Sqlite" Version="3.2.665" />
-    <PackageReference Include="NLog.Web.AspNetCore" Version="5.1.1" />
+    <PackageReference Include="FreeSql.Provider.PostgreSQL" Version="3.2.682" />
+    <PackageReference Include="FreeSql.Provider.SqliteCore" Version="3.2.682" />
+    <PackageReference Include="NLog.Web.AspNetCore" Version="5.1.5" />
+    <PackageReference Include="SQLitePCLRaw.bundle_e_sqlite3" Version="2.1.2" />
   </ItemGroup>
 
 </Project>

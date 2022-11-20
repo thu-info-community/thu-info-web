@@ -1,9 +1,10 @@
 ﻿<div>
     <canvas id="chart"></canvas>
+    <canvas id="chart2"></canvas>
 </div>
 <script src="~/lib/Chart.js/chart.min.js"></script>
 <script>
-    fetch("/stat/usagedata").then(res=>{
+    fetch("/Stat/UsageData").then(res=>{
         res.json().then(j=>{
             const data = {
                 datasets:[
@@ -20,7 +21,27 @@
                 data:data,
                 options:{}
             }
-            const chart = new Chart(document.getElementById("chart"),config);
+            const chart = new Chart(document.getElementById("chart"),config)
+        })
+    })
+    fetch("/Stat/StartupData").then(res=>{
+        res.json().then(j=>{
+            const data = {
+                datasets:[
+                    {
+                        label:"startup monthly",
+                        backgroundColor:"rgb(255,90,132)",
+                        borderColor:"rgb(255,99,132)",
+                        data:j
+                    }
+                ]
+            }
+            const config = {
+                type:"line",
+                data:data,
+                options:{}
+            }
+            const chart = new Chart(document.getElementById("chart2"),config)
         })
     })
 </script>
