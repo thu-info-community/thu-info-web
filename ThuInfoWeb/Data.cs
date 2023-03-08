@@ -130,6 +130,7 @@ namespace ThuInfoWeb
 
         public async Task<Dictionary<string, int>> GetStartupDataAsync()
             => await _fsql.Select<Startup>().GroupBy(x => x.CreatedTime.ToString("yyyy MM"))
+                .OrderBy(x=>x.Key)
                 .ToDictionaryAsync(x => x.Count());
 #if DEBUG
         public async Task GenStartupDataAsync()

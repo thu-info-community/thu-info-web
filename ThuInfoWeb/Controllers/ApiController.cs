@@ -66,7 +66,7 @@ namespace ThuInfoWeb.Controllers
             if (result != 1) return BadRequest();
             else
             {
-                _ = _feedbackNoticeBot.PushNoticeAsync($"收到新反馈\n{dto.Content}\n请前往https://thuinfo.net/Home/Feedback回复");
+                _ = _feedbackNoticeBot.PushNoticeAsync($"收到新反馈\n{dto.Content}\n请前往http://app.cs.tsinghua.edu.cn/Home/Feedback回复");
                 return Created("Api/Feedback", null);
             }
         }

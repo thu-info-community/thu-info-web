@@ -10,12 +10,16 @@ namespace ThuInfoWeb.Bots
         private readonly string _url;
         private readonly string _secret;
         private readonly HttpClient _httpClient;
-        public FeedbackNoticeBot(string url,string secret)
+        private readonly bool _internalNetworkMode;
+
+        public FeedbackNoticeBot(IConfiguration configuration)
         {
-            this._url = url;
-            this._secret = secret;
+            this._url = configuration["FeishuBots:FeedbackNoticeBot:Url"];
+            this._secret = configuration["FeishuBots:FeedbackNoticeBot:Secret"];
+            this._internalNetworkMode = bool.Parse(configuration["InternalNetworkMode"]);
             this._httpClient = new HttpClient();
         }
+
         private string GetSign(long timestamp)
         {
             var str = $"{timestamp}\n{_secret}";
@@ -24,27 +28,40 @@ namespace ThuInfoWeb.Bots
             var sign = Convert.ToBase64String(code);
             return sign;
         }
+
         public async Task PushNoticeAsync(string content)
         {
-            var ts = DateTimeOffset.Now.ToUnixTimeSeconds();
-            var resp = await _httpClient.PostAsync(_url, JsonContent.Create(new
+            if (_internalNetworkMode)
             {
-                timestamp = ts.ToString(),
-                sign = GetSign(ts),
-                msg_type = "text",
-                content = new
+                var resp = await _httpClient.PostAsync("https://stu.cs.tsinghua.edu.cn/thuinfo/botnotice", JsonContent.Create(new
                 {
-                    text = content
-                }
-            }));
-            var json =await resp.Content.ReadAsStringAsync();
-            var parsed = JsonDocument.Parse(json);
-            if (!parsed.RootElement.TryGetProperty("StatusCode", out var code))
-                throw new Exception("Send error");
-            else if (code.GetInt32() != 0)
-                throw new Exception("Send error");
+                    Content = content,
+                    Secret = _secret
+                }));
+                resp.EnsureSuccessStatusCode();
+            }
             else
-                return;
+            {
+                var ts = DateTimeOffset.Now.ToUnixTimeSeconds();
+                var resp = await _httpClient.PostAsync(_url, JsonContent.Create(new
+                {
+                    timestamp = ts.ToString(),
+                    sign = GetSign(ts),
+                    msg_type = "text",
+                    content = new
+                    {
+                        text = content
+                    }
+                }));
+                var json = await resp.Content.ReadAsStringAsync();
+                var parsed = JsonDocument.Parse(json);
+                if (!parsed.RootElement.TryGetProperty("StatusCode", out var code))
+                    throw new Exception("Send error");
+                else if (code.GetInt32() != 0)
+                    throw new Exception("Send error");
+                else
+                    return;
+            }
         }
     }
 }

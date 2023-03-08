@@ -21,11 +21,7 @@ builder.Services.AddSingleton<Data>(new Data(builder.Configuration.GetConnection
 // builder.Services.AddSingleton<SecretManager>();
 builder.Services.AddSingleton<VersionManager>();
 builder.Services.AddScoped<UserManager>();
-builder.Services.AddSingleton<FeedbackNoticeBot>(
-    new FeedbackNoticeBot(
-        builder.Configuration["FeishuBots:FeedbackNoticeBot:Url"],
-        builder.Configuration["FeishuBots:FeedbackNoticeBot:Secret"])
-    );
+builder.Services.AddSingleton<FeedbackNoticeBot>();
 builder.Services.AddSignalR();
 
 var app = builder.Build();
