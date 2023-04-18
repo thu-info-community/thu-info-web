@@ -142,7 +142,7 @@ namespace ThuInfoWeb
                                 $"No newer version is available for iOS(current version is {versionName}), check update for iOS ok.");
                         else
                         {
-                            var publishedAt = DateTime.Parse((string)json["releaseDate"]).ToLocalTime();
+                            var publishedAt = DateTime.Parse((string)json["currentVersionReleaseDate"]).ToLocalTime();
                             var releaseNote = (string)json["releaseNotes"];
                             var version = new Version()
                             {
