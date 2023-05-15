@@ -3,7 +3,7 @@ WORKDIR /build
 COPY . ./
 RUN dotnet publish -c Release -o out
 
-FROM ubuntu/dotnet-aspnet:6.0-22.04_beta
+FROM bitnami/dotnet:6
 WORKDIR /app
 COPY --from=build-env /build/out .
-ENTRYPOINT [ "dotnet", "ThuInfoWeb.dll", "--urls", "http://0.0.0.0:80"]
+ENTRYPOINT [ "dotnet", "ThuInfoWeb.dll"]
