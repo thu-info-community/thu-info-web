@@ -3,7 +3,7 @@ WORKDIR /build
 COPY . ./
 RUN dotnet publish -c Release -o out
 
-FROM bitnami/dotnet:6
+FROM bitnami/aspnet-core:6
 WORKDIR /app
 COPY --from=build-env /build/out .
 ENTRYPOINT [ "dotnet", "ThuInfoWeb.dll"]
