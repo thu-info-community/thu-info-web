@@ -23,7 +23,11 @@ namespace ThuInfoWeb.DBModels
             WasherInfo,
             QZYQ,
             DormScore,
-            Electricity
+            Electricity,
+            NetworkDetail,
+            OnlineDevices,
+            SchoolCalendar,
+            CampusCard
         }
     }
 }
