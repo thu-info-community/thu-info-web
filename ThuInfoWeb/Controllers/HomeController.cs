@@ -211,7 +211,8 @@ namespace ThuInfoWeb.Controllers
             return View(new MiscViewModel()
             {
                 ApkUrl = misc.ApkUrl,
-                QrCodeContent = misc.QrCodeContent
+                QrCodeContent = misc.QrCodeContent,
+                CardIVersion = misc.CardIVersion
             });
         }
         [HttpPost, Authorize(Roles = "admin")]
@@ -221,7 +222,8 @@ namespace ThuInfoWeb.Controllers
             var misc = new Misc()
             {
                 ApkUrl = vm.ApkUrl,
-                QrCodeContent = vm.QrCodeContent
+                QrCodeContent = vm.QrCodeContent,
+                CardIVersion = vm.CardIVersion
             };
             var result = await _data.UpdateMiscAsync(misc);
             if (result != 1) return BadRequest();

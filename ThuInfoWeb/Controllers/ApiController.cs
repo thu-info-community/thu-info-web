@@ -17,12 +17,13 @@ namespace ThuInfoWeb.Controllers
         private readonly VersionManager _versionManager;
         private readonly FeedbackNoticeBot _feedbackNoticeBot;
 
-        public ApiController(Data data, VersionManager versionManager,FeedbackNoticeBot feedbackNoticeBot)
+        public ApiController(Data data, VersionManager versionManager, FeedbackNoticeBot feedbackNoticeBot)
         {
             this._data = data;
             this._versionManager = versionManager;
             this._feedbackNoticeBot = feedbackNoticeBot;
         }
+
         /// <summary>
         /// Get announce, get the latest announce simply by no query string(just get /api/announce). If needed, you should only enter id or page at one time.
         /// </summary>
@@ -45,6 +46,7 @@ namespace ThuInfoWeb.Controllers
                 return Ok(a);
             }
         }
+
         /// <summary>
         /// Create a feedback
         /// </summary>
@@ -66,10 +68,12 @@ namespace ThuInfoWeb.Controllers
             if (result != 1) return BadRequest();
             else
             {
-                _ = _feedbackNoticeBot.PushNoticeAsync($"收到新反馈\n{dto.Content}\n请前往http://app.cs.tsinghua.edu.cn/Home/Feedback回复");
+                _ = _feedbackNoticeBot.PushNoticeAsync(
+                    $"收到新反馈\n{dto.Content}\n请前往http://app.cs.tsinghua.edu.cn/Home/Feedback回复");
                 return Created("Api/Feedback", null);
             }
         }
+
         [Route("RepliedFeedback")]
         public async Task<IActionResult> RepliedFeedback()
         {
@@ -82,6 +86,7 @@ namespace ThuInfoWeb.Controllers
                     repliedTime = x.RepliedTime
                 }).ToList());
         }
+
         /// <summary>
         /// Get the url content of Wechat group QRCode.
         /// </summary>
@@ -91,6 +96,7 @@ namespace ThuInfoWeb.Controllers
         {
             return Ok((await _data.GetMiscAsync()).QrCodeContent);
         }
+
         /// <summary>
         /// Redirect to the url ok APK.
         /// </summary>
@@ -101,17 +107,20 @@ namespace ThuInfoWeb.Controllers
             // when start for the first time, if the apkurl is null or empty, this will generate an exception, so set an apkurl value as soon as possible.
             return Redirect((await _data.GetMiscAsync())?.ApkUrl);
         }
+
         [Route("Socket")]
         public async Task<IActionResult> Socket([FromQuery] int? sectionId)
         {
             if (sectionId is null)
                 return Ok(new List<SocketDto>());
+
             static string parse(Socket.SocketStatus status) => status switch
             {
                 DBModels.Socket.SocketStatus.Available => "available",
                 DBModels.Socket.SocketStatus.Unavailable => "unavailable",
                 DBModels.Socket.SocketStatus.Unknown => "unknown"
             };
+
             return Ok((await _data.GetSocketsAsync(sectionId ?? 0)).Select(x => new SocketDto()
             {
                 CreatedTime = x.CreatedTime,
@@ -121,6 +130,7 @@ namespace ThuInfoWeb.Controllers
                 Status = parse(x.Status)
             }).ToList());
         }
+
         [HttpPost, Route("Socket")]
         public async Task<IActionResult> Socket(SocketDto dto)
         {
@@ -128,11 +138,18 @@ namespace ThuInfoWeb.Controllers
             if (result != 1) return BadRequest();
             else return Ok();
         }
+
         [Route("Version/{os}")]
         public IActionResult Version([FromRoute] string os)
         {
             if (os.ToLower() == "android") return Ok(_versionManager.GetCurrentVersion(VersionManager.OS.Android));
             else return Ok(_versionManager.GetCurrentVersion(VersionManager.OS.IOS));
+        }
+
+        [Route("CardIVersion")]
+        public async Task<IActionResult> CardIVersion()
+        {
+            return Ok(new { Version = (await _data.GetMiscAsync()).CardIVersion });
         }
     }
 }

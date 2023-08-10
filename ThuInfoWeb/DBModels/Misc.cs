@@ -19,5 +19,10 @@ namespace ThuInfoWeb.DBModels
         /// </summary>
         [Column(StringLength = -1)]
         public string ApkUrl { get; set; }
+        /// <summary>
+        /// The interface version of new school card.
+        /// </summary>
+        [Column]
+        public int CardIVersion { get; set; }
     }
 }
