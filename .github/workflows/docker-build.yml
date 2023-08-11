@@ -16,19 +16,3 @@ jobs:
           file: dockerfile
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/thuinfo-web:latest
           push: true
-  build-private:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - name: Docker Login
-        uses: docker/login-action@v2.1.0
-        with:
-          registry: ${{ secrets.PRIVATE_REGISTRY }}
-          username: ${{ secrets.PRIVATE_USERNAME }}
-          password: ${{ secrets.PRIVATE_PASSWORD }}
-      - name: Build and Push
-        uses: docker/build-push-action@v4.0.0
-        with:
-          file: dockerfile
-          tags: ${{ secrets.PRIVATE_REGISTRY }}/thuinfo-web:latest
-          push: true
