@@ -53,7 +53,7 @@ namespace ThuInfoWeb
             OS.Android => new VersionDto
             {
                 CreatedTime = _currentVersionOfAndroid.CreatedTime,
-                DownloadUrl = "https://thuinfo.net/api/apk",
+                DownloadUrl = "https://app.cs.tsinghua.edu.cn/api/apk",
                 ReleaseNote = _currentVersionOfAndroid.ReleaseNote,
                 VersionName = _currentVersionOfAndroid.VersionName,
             },
