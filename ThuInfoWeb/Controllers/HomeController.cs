@@ -28,6 +28,11 @@ namespace ThuInfoWeb.Controllers
         public async Task<IActionResult> Register(RegisterViewModel vm)
         {
             if (!ModelState.IsValid) return View(vm);
+
+            // Prohibit registration
+            ModelState.AddModelError(nameof(vm.Name), "禁止注册新用户");
+            return View(vm);
+
             if (await _data.CheckUserAsync(vm.Name))
             {
                 ModelState.AddModelError(nameof(vm.Name), "用户名已被注册");
