@@ -15,10 +15,10 @@ namespace ThuInfoWeb.Controllers
 
         public HomeController(ILogger<HomeController> logger, Data data, UserManager userManager, VersionManager versionManager)
         {
-            this._logger = logger;
-            this._data = data;
-            this._userManager = userManager;
-            this._versionManager = versionManager;
+            _logger = logger;
+            _data = data;
+            _userManager = userManager;
+            _versionManager = versionManager;
         }
         public IActionResult Register()
         {
@@ -33,29 +33,29 @@ namespace ThuInfoWeb.Controllers
             ModelState.AddModelError(nameof(vm.Name), "禁止注册新用户");
             return View(vm);
 
-            if (await _data.CheckUserAsync(vm.Name))
-            {
-                ModelState.AddModelError(nameof(vm.Name), "用户名已被注册");
-                return View(vm);
-            }
-            var user = new User()
-            {
-                Name = vm.Name,
-                PasswordHash = vm.Password.ToSHA256Hex(),
-                CreatedTime = DateTime.Now,
-                IsAdmin = false
-            };
-            var result = await _data.CreateUserAsync(user);
-            if (result == 1)
-            {
-                await _userManager.DoLoginAsync(vm.Name, false);
-                return RedirectToAction("Index");
-            }
-            else
-            {
-                ModelState.AddModelError(nameof(vm.Name), "发生未知错误");
-                return View(vm);
-            }
+            // if (await _data.CheckUserAsync(vm.Name))
+            // {
+            //     ModelState.AddModelError(nameof(vm.Name), "用户名已被注册");
+            //     return View(vm);
+            // }
+            // var user = new User()
+            // {
+            //     Name = vm.Name,
+            //     PasswordHash = vm.Password.ToSHA256Hex(),
+            //     CreatedTime = DateTime.Now,
+            //     IsAdmin = false
+            // };
+            // var result = await _data.CreateUserAsync(user);
+            // if (result == 1)
+            // {
+            //     await _userManager.DoLoginAsync(vm.Name, false);
+            //     return RedirectToAction("Index");
+            // }
+            // else
+            // {
+            //     ModelState.AddModelError(nameof(vm.Name), "发生未知错误");
+            //     return View(vm);
+            // }
         }
         public IActionResult Login()
         {
@@ -133,7 +133,9 @@ namespace ThuInfoWeb.Controllers
                 Title = a.Title,
                 Author = a.Author,
                 CreatedTime = a.CreatedTime,
-                IsActive = a.IsActive
+                IsActive = a.IsActive,
+                VisibleNotAfter = a.VisibleNotAfter,
+                VisibleExact = a.VisibleExact
             }).ToList());
         }
 
@@ -141,14 +143,18 @@ namespace ThuInfoWeb.Controllers
         public async Task<IActionResult> CreateAnnounce(AnnounceViewModel vm)
         {
             if (vm.Title is null || vm.Content is null) return BadRequest("标题或内容为空");
-            var user = HttpContext.User.Identity.Name;
-            var a = new Announce()
+            vm.VisibleNotAfter ??= "9.9.9";
+            vm.VisibleExact ??= "";
+            var user = HttpContext.User.Identity?.Name;
+            var a = new Announce
             {
                 Title = vm.Title,
                 Content = vm.Content,
-                Author = user,
+                Author = user ?? "",
                 CreatedTime = DateTime.Now,
-                IsActive = vm.IsActive
+                IsActive = vm.IsActive,
+                VisibleNotAfter = vm.VisibleNotAfter,
+                VisibleExact = vm.VisibleExact
             };
             var result = await _data.CreateAnnounceAsync(a);
             if (result != 1) return BadRequest(ModelState);

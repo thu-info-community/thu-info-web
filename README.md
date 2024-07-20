@@ -2,10 +2,10 @@
 The web server application of [THUInfo](https://github.com/UNIDY2002/THUInfo)
 # Build Instruction
 ## Step 1
-Install dotnet sdk 6.0.
+Install dotnet sdk 8.0.
 If you are running RHEL or CentOS, just use
 ```
-$ sudo dnf install dotnet-sdk-6.0
+$ sudo dnf install dotnet-sdk-8.0
 ```
 Others should follow this [installation instruction](https://docs.microsoft.com/zh-cn/dotnet/core/install/linux)
 ## Step 2

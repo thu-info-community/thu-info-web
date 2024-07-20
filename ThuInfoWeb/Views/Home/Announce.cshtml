@@ -23,6 +23,7 @@
           <th scope="col">ID</th>
           <th scope="col">标题</th>
           <th scope="col">内容</th>
+          <th scope="col">生效版本</th>
           <th scope="col">作者</th>
           <th scope="col">创建时间</th>
           <th scope="col">是否生效</th>
@@ -36,6 +37,15 @@
                     <th scope="row">@item.Id</th>
                     <td>@item.Title</td>
                     <td>@item.Content</td>
+                    <td>
+                        <span>&lt;=</span>
+                        <span>@item.VisibleNotAfter</span>
+                        @if (item.VisibleExact != "")
+                        {
+                            <span>,</span>
+                            <span>@item.VisibleExact</span>
+                        }
+                    </td>
                     <td>@item.Author</td>
                     <td>@item.CreatedTime</td>
                     <td>@item.IsActive</td>
