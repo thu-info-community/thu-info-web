@@ -145,12 +145,12 @@ namespace ThuInfoWeb.Controllers
             if (vm.Title is null || vm.Content is null) return BadRequest("标题或内容为空");
             vm.VisibleNotAfter ??= "9.9.9";
             vm.VisibleExact ??= "";
-            var user = HttpContext.User.Identity?.Name;
+            var user = HttpContext.User.Identity!.Name!;
             var a = new Announce
             {
                 Title = vm.Title,
                 Content = vm.Content,
-                Author = user ?? "",
+                Author = user,
                 CreatedTime = DateTime.Now,
                 IsActive = vm.IsActive,
                 VisibleNotAfter = vm.VisibleNotAfter,
