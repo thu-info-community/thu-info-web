@@ -1,12 +1,13 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
+using System.Text.RegularExpressions;
 using ThuInfoWeb.DBModels;
 using ThuInfoWeb.Models;
 
 namespace ThuInfoWeb.Controllers
 {
-    public class HomeController : Controller
+    public partial class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;
         private readonly Data _data;
@@ -143,8 +144,26 @@ namespace ThuInfoWeb.Controllers
         public async Task<IActionResult> CreateAnnounce(AnnounceViewModel vm)
         {
             if (vm.Title is null || vm.Content is null) return BadRequest("标题或内容为空");
-            vm.VisibleNotAfter ??= "9.9.9";
-            vm.VisibleExact ??= "";
+            var visibleNotAfter = vm.VisibleNotAfter?.Trim() ?? "9.9.9";
+            var visibleExact = vm.VisibleExact ?? "";
+            
+            if (!VersionRegex().IsMatch(visibleNotAfter))
+            {
+                return BadRequest("\"在不晚于以下版本生效\"中的版本号格式错误");
+            }
+            
+            var visibleExactList = visibleExact.Split(',')
+                .Select(x => x.Trim())
+                .Where(x => !string.IsNullOrWhiteSpace(x))
+                .ToList();
+            
+            if (visibleExactList.Any(x => !VersionRegex().IsMatch(x)))
+            {
+                return BadRequest("\"在以下版本生效\"中的版本号格式错误");
+            }
+            
+            visibleExact = string.Join(',', visibleExactList);
+
             var user = HttpContext.User.Identity!.Name!;
             var a = new Announce
             {
@@ -153,8 +172,8 @@ namespace ThuInfoWeb.Controllers
                 Author = user,
                 CreatedTime = DateTime.Now,
                 IsActive = vm.IsActive,
-                VisibleNotAfter = vm.VisibleNotAfter,
-                VisibleExact = vm.VisibleExact
+                VisibleNotAfter = visibleNotAfter,
+                VisibleExact = visibleExact
             };
             var result = await _data.CreateAnnounceAsync(a);
             if (result != 1) return BadRequest(ModelState);
@@ -258,6 +277,9 @@ namespace ThuInfoWeb.Controllers
         {
             throw new Exception("Generated exception in DEBUG build");
         }
+
+        [GeneratedRegex(@"^\d+\.\d+\.\d+$")]
+        private static partial Regex VersionRegex();
 #endif
     }
 }
