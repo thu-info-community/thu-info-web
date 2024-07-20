@@ -14,6 +14,9 @@ namespace ThuInfoWeb.Controllers
         private readonly UserManager _userManager;
         private readonly VersionManager _versionManager;
 
+        [GeneratedRegex(@"^\d+\.\d+\.\d+$")]
+        private static partial Regex VersionRegex();
+
         public HomeController(ILogger<HomeController> logger, Data data, UserManager userManager, VersionManager versionManager)
         {
             _logger = logger;
@@ -271,15 +274,13 @@ namespace ThuInfoWeb.Controllers
         {
             return View();
         }
+
 #if DEBUG
         [Route("Home/Exception")]
         public IActionResult Exception()
         {
             throw new Exception("Generated exception in DEBUG build");
         }
-
-        [GeneratedRegex(@"^\d+\.\d+\.\d+$")]
-        private static partial Regex VersionRegex();
 #endif
     }
 }
