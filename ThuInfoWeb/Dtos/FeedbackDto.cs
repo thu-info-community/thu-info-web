@@ -1,19 +1,21 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace ThuInfoWeb.Dtos
+namespace ThuInfoWeb.Dtos;
+
+public class FeedbackDto
 {
-    public class FeedbackDto
-    {
-        [Required]
-        public string Content { get; set; }
-        [MaxLength(256)]
-        public string Contact { get; set; } = string.Empty;
-        [Required]
-        public string OS { get; set; }
-        [Required]
-        public string AppVersion { get; set; }
-        [Required]
-        public string PhoneModel { get; set; }
-        
-    }
+    [Required]
+    public string Content { get; init; } = string.Empty;
+
+    [MaxLength(256)]
+    public string Contact { get; init; } = string.Empty;
+
+    [Required]
+    public string OS { get; init; } = string.Empty;
+
+    [Required]
+    public string AppVersion { get; init; } = string.Empty;
+
+    [Required]
+    public string PhoneModel { get; init; } = string.Empty;
 }

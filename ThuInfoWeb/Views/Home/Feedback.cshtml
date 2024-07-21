@@ -3,77 +3,78 @@
     ViewData["Title"] = "Feedback Page";
 }
 <div class="container">
-   <table class="table" style="word-break:break-all;word-wrap:break-word;">
-      <thead>
+    <table class="table" style="word-break:break-all;word-wrap:break-word;">
+        <thead>
         <tr>
-          <th scope="col">ID</th>
-          <th scope="col" style="width:15%;">内容</th>
-          <th scope="col">系统</th>
-          <th scope="col">版本</th>
-          <th scope="col">机型</th>
-          <th scope="col">联系方式</th>
-          <th scope="col" style="width:15%;">回复</th>
-          <th scope="col">回复者</th>
-          <th scope="col">创建时间</th>
-          <th scope="col">回复时间</th>
-          <th scope="col">操作</th>
+            <th scope="col">ID</th>
+            <th scope="col" style="width:15%;">内容</th>
+            <th scope="col">系统</th>
+            <th scope="col">版本</th>
+            <th scope="col">机型</th>
+            <th scope="col">联系方式</th>
+            <th scope="col" style="width:15%;">回复</th>
+            <th scope="col">回复者</th>
+            <th scope="col">创建时间</th>
+            <th scope="col">回复时间</th>
+            <th scope="col">操作</th>
         </tr>
-      </thead>
-      <tbody>
-            @foreach(var item in Model)
-            {
-                <tr>
-                    <th scope="row">@item.Id</th>
-                    <td>@item.Content</td>
-                    <td>@item.OS</td>
-                    <td>@item.AppVersion</td>
-                    <td>@item.PhoneModel</td>
-                    <td>@item.Contact</td>
-                    <td>@item.Reply</td>
-                    <td>@item.ReplyerName</td>
-                    <td>@item.CreatedTime</td>
-                    <td>@item.RepliedTime</td>
-                    <td>
-                        <a class="btn btn-link" data-bs-toggle="modal" data-bs-target="#replymodal" onclick="startreply(@item.Id)">回复</a>
-                        <a class="btn btn-link" asp-action="DeleteFeedback" asp-route-id="@item.Id" asp-route-returnpage="@ViewData["page"]">删除</a>
-                    </td>
-                </tr>
-            }
-      </tbody>
+        </thead>
+        <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <th scope="row">@item.Id</th>
+                <td>@item.Content</td>
+                <td>@item.OS</td>
+                <td>@item.AppVersion</td>
+                <td>@item.PhoneModel</td>
+                <td>@item.Contact</td>
+                <td>@item.Reply</td>
+                <td>@item.ReplierName</td>
+                <td>@item.CreatedTime</td>
+                <td>@item.RepliedTime</td>
+                <td>
+                    <a class="btn btn-link" data-bs-toggle="modal" data-bs-target="#replymodal" onclick="startreply(@item.Id)">回复</a>
+                    <a class="btn btn-link" asp-action="DeleteFeedback" asp-route-id="@item.Id" asp-route-returnpage="@ViewData["page"]">删除</a>
+                </td>
+            </tr>
+        }
+        </tbody>
     </table>
     <div>
-        @if ((int)ViewData["page"] != 1)
+        @if ((int)ViewData["page"]! != 1)
         {
-            <a class="btn btn-primary" asp-action="Feedback" asp-route-page='@((int)ViewData["page"]-1)'>上一页</a>
+            <a class="btn btn-primary" asp-action="Feedback" asp-route-page='@((int)ViewData["page"]! - 1)'>上一页</a>
         }
-        <a class="btn-primary btn" asp-action="Feedback" asp-route-page='@((int)ViewData["page"]+1)'>下一页</a>
+        <a class="btn-primary btn" asp-action="Feedback" asp-route-page='@((int)ViewData["page"]! + 1)'>下一页</a>
     </div>
     <div class="modal fade" id="replymodal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
-      <div class="modal-dialog">
-        <div class="modal-content">
-          <form id="replyform">
-            <div class="modal-header">
-              <h5 class="modal-title" id="staticBackdropLabel">回复</h5>
-              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form id="replyform">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="staticBackdropLabel">回复</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div>
+                            <label for="replyinput" class="form-label">回复内容</label>
+                            <textarea name="reply" type="text" class="form-control" id="replyinput" required></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                        <button type="submit" class="btn btn-primary" id="replybtn">回复</button>
+                    </div>
+                </form>
             </div>
-            <div class="modal-body">
-                <div>
-                  <label for="replyinput" class="form-label">回复内容</label>
-                  <textarea name="reply" type="text" class="form-control" id="replyinput" required></textarea>
-                </div>
-            </div>
-            <div class="modal-footer">
-              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
-              <button type="submit" class="btn btn-primary" id="replybtn">回复</button>
-            </div>
-          </form>
         </div>
-      </div>
     </div>
 </div>
+
 @section Scripts
 {
-<script>
+    <script>
     var globalid;
     function startreply(id){
         globalid = id;

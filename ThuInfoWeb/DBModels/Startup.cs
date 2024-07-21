@@ -4,8 +4,9 @@ namespace ThuInfoWeb.DBModels;
 
 public class Startup
 {
-    [Column(IsPrimary = true,IsIdentity = true)]
-    public int Id { get; set; }
+    [Column(IsPrimary = true, IsIdentity = true)]
+    public int Id { get; init; }
 
-    public DateTime CreatedTime { get; set; }
+    [Column(IsNullable = false)]
+    public DateTime CreatedTime { get; init; }
 }

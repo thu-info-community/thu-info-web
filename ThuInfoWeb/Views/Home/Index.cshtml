@@ -1,11 +1,11 @@
-﻿@inject VersionManager _versionManager
+﻿@inject VersionManager VersionManager
 @{
     ViewData["Title"] = "Home Page";
 }
 
 <div>
     <h2>
-        Hello, @User.Identity.Name !
+        Hello, @User.Identity!.Name !
     </h2>
     <div class="container">
         @if (User.IsInRole("admin"))
@@ -14,11 +14,11 @@
                 <div class="card-body">
                     <h5 class="card-title">当前版本信息</h5>
                     <h6 class="card-subtitle mb-2 text-muted">Android</h6>
-                    <p class="card-text">@_versionManager.GetCurrentVersion(VersionManager.OS.Android).VersionName</p>
+                    <p class="card-text">@VersionManager.GetCurrentVersion(VersionManager.OS.Android).VersionName</p>
                     <h6 class="card-subtitle mb-2 text-muted">iOS</h6>
-                    <p class="card-text">@_versionManager.GetCurrentVersion(VersionManager.OS.IOS).VersionName</p>
+                    <p class="card-text">@VersionManager.GetCurrentVersion(VersionManager.OS.IOS).VersionName</p>
                     <h6 class="card-subtitle mb-2 text-muted">版本检查运行状态</h6>
-                    @if (_versionManager.IsRunning)
+                    @if (VersionManager.IsRunning)
                     {
                         <p class="card-text  text-danger">运行中</p>
                     }
@@ -47,7 +47,7 @@
         <a class="btn btn-primary" asp-action="Logout">退出</a>
     </div>
     <script>
-        const checkisrunning = @(_versionManager.IsRunning ? "true" : "false");
+        const checkisrunning = @(VersionManager.IsRunning ? "true" : "false");
         function checkupdate(os){
             if(checkisrunning) {
                 alert("版本检查运行中，请稍后刷新再试");
