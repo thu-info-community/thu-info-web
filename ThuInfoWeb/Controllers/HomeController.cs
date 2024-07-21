@@ -1,5 +1,4 @@
 ﻿using System.Diagnostics;
-using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ThuInfoWeb.DBModels;
@@ -7,14 +6,11 @@ using ThuInfoWeb.Models;
 
 namespace ThuInfoWeb.Controllers;
 
-public partial class HomeController(ILogger<HomeController> logger, Data data, UserManager userManager,
+public class HomeController(ILogger<HomeController> logger, Data data, UserManager userManager,
     VersionManager versionManager)
     : Controller
 {
     private readonly ILogger<HomeController> _logger = logger;
-
-    [GeneratedRegex(@"^\d+\.\d+\.\d+$")]
-    private static partial Regex VersionRegex();
 
     public IActionResult Register()
     {
@@ -156,7 +152,7 @@ public partial class HomeController(ILogger<HomeController> logger, Data data, U
         var visibleNotAfter = vm.VisibleNotAfter?.Trim() ?? "9.9.9";
         var visibleExact = vm.VisibleExact ?? "";
 
-        if (!VersionRegex().IsMatch(visibleNotAfter))
+        if (!visibleNotAfter.IsValidVersionNumber())
             return BadRequest("\"在不晚于以下版本生效\"中的版本号格式错误");
 
         var visibleExactList = visibleExact.Split(',')
@@ -164,7 +160,7 @@ public partial class HomeController(ILogger<HomeController> logger, Data data, U
             .Where(x => !string.IsNullOrWhiteSpace(x))
             .ToList();
 
-        if (visibleExactList.Any(x => !VersionRegex().IsMatch(x)))
+        if (visibleExactList.Any(x => !x.IsValidVersionNumber()))
             return BadRequest("\"在以下版本生效\"中的版本号格式错误");
 
         visibleExact = string.Join(',', visibleExactList);
