@@ -22,7 +22,7 @@ public partial class HomeController(ILogger<HomeController> logger, Data data, U
     }
 
     [HttpPost]
-    public async Task<IActionResult> Register(RegisterViewModel vm)
+    public IActionResult Register(RegisterViewModel vm)
     {
         if (!ModelState.IsValid)
             return View(vm);
@@ -281,7 +281,7 @@ public partial class HomeController(ILogger<HomeController> logger, Data data, U
     public IActionResult CheckUpdate([FromRoute] string os)
     {
         if (!versionManager.IsRunning)
-            _ = versionManager.CheckUpdateAsync(os.ToLower() == "android"
+            _ = versionManager.CheckUpdateAsync(os.Equals("android", StringComparison.CurrentCultureIgnoreCase)
                 ? VersionManager.OS.Android
                 : VersionManager.OS.IOS);
         return RedirectToAction(nameof(Index));

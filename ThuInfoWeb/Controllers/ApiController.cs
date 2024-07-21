@@ -10,19 +10,9 @@ namespace ThuInfoWeb.Controllers;
 /// </summary>
 [Route("[controller]")]
 [ApiController]
-public class ApiController : ControllerBase
+public class ApiController(Data data, VersionManager versionManager, FeedbackNoticeBot feedbackNoticeBot)
+    : ControllerBase
 {
-    private readonly Data _data;
-    private readonly FeedbackNoticeBot _feedbackNoticeBot;
-    private readonly VersionManager _versionManager;
-
-    public ApiController(Data data, VersionManager versionManager, FeedbackNoticeBot feedbackNoticeBot)
-    {
-        _data = data;
-        _versionManager = versionManager;
-        _feedbackNoticeBot = feedbackNoticeBot;
-    }
-
     /// <summary>
     ///     Get announce, get the latest announce simply by no query string(just get /api/announce). If needed, you should only
     ///     enter id or page at one time.
@@ -33,16 +23,16 @@ public class ApiController : ControllerBase
     [Route("Announce")]
     public async Task<IActionResult> Announce([FromQuery] int? id, [FromQuery] int? page)
     {
-        if (page is not null && page <= 0)
+        if (page <= 0)
             return BadRequest("page必须是正整数");
         if (page is not null)
         {
-            var a = await _data.GetActiveAnnouncesAsync(page ?? 1, 5);
+            var a = await data.GetActiveAnnouncesAsync((int)page, 5);
             return Ok(a);
         }
         else
         {
-            var a = await _data.GetActiveAnnounceAsync(id);
+            var a = await data.GetActiveAnnounceAsync(id);
             return Ok(a);
         }
     }
@@ -65,13 +55,13 @@ public class ApiController : ControllerBase
             Contact = dto.Contact,
             PhoneModel = dto.PhoneModel
         };
-        var result = await _data.CreateFeedbackAsync(feedback);
+        var result = await data.CreateFeedbackAsync(feedback);
         if (result != 1)
         {
             return BadRequest();
         }
 
-        _ = _feedbackNoticeBot.PushNoticeAsync(
+        _ = feedbackNoticeBot.PushNoticeAsync(
             $"收到新反馈\n{dto.Content}\n请前往http://app.cs.tsinghua.edu.cn/Home/Feedback回复");
         return Created("Api/Feedback", null);
     }
@@ -79,10 +69,10 @@ public class ApiController : ControllerBase
     [Route("RepliedFeedback")]
     public async Task<IActionResult> RepliedFeedback()
     {
-        return Ok((await _data.GetAllRepliedFeedbacksAsync())
+        return Ok((await data.GetAllRepliedFeedbacksAsync())
             .Select(x => new
             {
-                content = x.Content, reply = x.Reply, replierName = x.ReplierName ?? "", repliedTime = x.RepliedTime
+                content = x.Content, reply = x.Reply, replierName = x.ReplierName, repliedTime = x.RepliedTime
             }).ToList());
     }
 
@@ -93,7 +83,7 @@ public class ApiController : ControllerBase
     [Route("QRCode")]
     public async Task<IActionResult> QRCode()
     {
-        return Ok((await _data.GetMiscAsync())?.QrCodeContent ?? "");
+        return Ok((await data.GetMiscAsync())?.QrCodeContent ?? "");
     }
 
     /// <summary>
@@ -104,7 +94,7 @@ public class ApiController : ControllerBase
     public async Task<IActionResult> Apk()
     {
         // when start for the first time, if the apkurl is null or empty, this will generate an exception, so set an apkurl value as soon as possible.
-        return Redirect((await _data.GetMiscAsync())?.ApkUrl ?? "");
+        return Redirect((await data.GetMiscAsync())?.ApkUrl ?? "");
     }
 
     [Route("Socket")]
@@ -113,7 +103,7 @@ public class ApiController : ControllerBase
         if (sectionId is null)
             return Ok(new List<SocketDto>());
 
-        return Ok((await _data.GetSocketsAsync(sectionId ?? 0)).Select(x => new SocketDto
+        return Ok((await data.GetSocketsAsync((int)sectionId)).Select(x => new SocketDto
         {
             CreatedTime = x.CreatedTime,
             SeatId = x.SeatId,
@@ -137,7 +127,7 @@ public class ApiController : ControllerBase
     [Route("Socket")]
     public async Task<IActionResult> Socket(SocketDto dto)
     {
-        var result = await _data.UpdateSocketAsync(dto.SeatId ?? 0, dto.IsAvailable ?? false);
+        var result = await data.UpdateSocketAsync(dto.SeatId ?? 0, dto.IsAvailable ?? false);
         if (result != 1)
             return BadRequest();
         return Ok();
@@ -146,14 +136,14 @@ public class ApiController : ControllerBase
     [Route("Version/{os}")]
     public IActionResult Version([FromRoute] string os)
     {
-        if (os.ToLower() == "android")
-            return Ok(_versionManager.GetCurrentVersion(VersionManager.OS.Android));
-        return Ok(_versionManager.GetCurrentVersion(VersionManager.OS.IOS));
+        return Ok(os.Equals("android", StringComparison.CurrentCultureIgnoreCase)
+            ? versionManager.GetCurrentVersion(VersionManager.OS.Android)
+            : versionManager.GetCurrentVersion(VersionManager.OS.IOS));
     }
 
     [Route("CardIVersion")]
     public async Task<IActionResult> CardIVersion()
     {
-        return Ok(new { Version = (await _data.GetMiscAsync())?.CardIVersion ?? -1 });
+        return Ok(new { Version = (await data.GetMiscAsync())?.CardIVersion ?? -1 });
     }
 }

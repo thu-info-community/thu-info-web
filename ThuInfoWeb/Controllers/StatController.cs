@@ -6,22 +6,15 @@ namespace ThuInfoWeb.Controllers;
 
 [Route("[controller]/[action]")]
 [ApiController]
-public class StatController : ControllerBase
+public class StatController(Data data) : ControllerBase
 {
-    private readonly Data _data;
-
-    public StatController(Data data)
-    {
-        _data = data;
-    }
-
     [Route("{function:int}")]
     public async Task<IActionResult> Usage(int function)
     {
         if (!Enum.IsDefined(typeof(Usage.FunctionType), function))
             return BadRequest("功能不存在");
         var usage = new Usage { Function = (Usage.FunctionType)function, CreatedTime = DateTime.Now };
-        var result = await _data.CreateUsageAsync(usage);
+        var result = await data.CreateUsageAsync(usage);
         if (result != 1)
             return BadRequest();
         return Ok();
@@ -31,13 +24,13 @@ public class StatController : ControllerBase
     [Authorize(Roles = "admin")]
     public async Task<IActionResult> UsageData()
     {
-        return Ok(await _data.GetUsageAsync());
+        return Ok(await data.GetUsageAsync());
     }
 
     public async Task<IActionResult> Startup()
     {
         var s = new Startup { CreatedTime = DateTime.Now };
-        var result = await _data.CreateStartupAsync(s);
+        var result = await data.CreateStartupAsync(s);
         if (result != 1)
             return BadRequest();
         return Ok();
@@ -47,12 +40,12 @@ public class StatController : ControllerBase
     [Authorize(Roles = "admin")]
     public async Task<IActionResult> StartupData()
     {
-        return Ok(await _data.GetStartupDataAsync());
+        return Ok(await data.GetStartupDataAsync());
     }
 #if DEBUG
     public async Task<IActionResult> GenStartupData()
     {
-        await _data.GenStartupDataAsync();
+        await data.GenStartupDataAsync();
         return Ok();
     }
 #endif
