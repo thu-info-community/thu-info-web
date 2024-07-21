@@ -1,19 +1,22 @@
 ﻿using System.Security.Cryptography;
 using System.Text;
+using System.Text.RegularExpressions;
 
-namespace ThuInfoWeb
+namespace ThuInfoWeb;
+
+public static partial class Extension
 {
-    public static class Extension
+    [GeneratedRegex(@"^\d+\.\d+\.\d+$")]
+    private static partial Regex VersionRegex();
+
+    public static string ToSHA256Hex(this string s)
     {
-        public static string ToSHA256Hex(this string s)
-        {
-            var data = SHA256.HashData(Encoding.ASCII.GetBytes(s));
-            string output = "";
-            foreach (var b in data)
-            {
-                output += b.ToString("x").PadLeft(2, '0');
-            }
-            return output;
-        }
+        var data = SHA256.HashData(Encoding.ASCII.GetBytes(s));
+        return data.Aggregate("", (current, b) => current + b.ToString("x").PadLeft(2, '0'));
+    }
+
+    public static bool IsValidVersionNumber(this string s)
+    {
+        return VersionRegex().IsMatch(s);
     }
 }

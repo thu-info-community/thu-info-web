@@ -72,11 +72,11 @@
         </tbody>
     </table>
     <div>
-        @if ((int)ViewData["page"] != 1)
+        @if ((int)ViewData["page"]! != 1)
         {
-            <a class="btn btn-primary" asp-action="Announce" asp-route-page='@((int)ViewData["page"] - 1)'>上一页</a>
+            <a class="btn btn-primary" asp-action="Announce" asp-route-page='@((int)ViewData["page"]! - 1)'>上一页</a>
         }
-        <a class="btn-primary btn" asp-action="Announce" asp-route-page='@((int)ViewData["page"] + 1)'>下一页</a>
+        <a class="btn-primary btn" asp-action="Announce" asp-route-page='@((int)ViewData["page"]! + 1)'>下一页</a>
     </div>
 </div>
 <script>

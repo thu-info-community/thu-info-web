@@ -1,3 +1,4 @@
+using NLog;
 using NLog.Web;
 using ThuInfoWeb;
 using ThuInfoWeb.Bots;
@@ -17,7 +18,8 @@ builder.Services.AddAuthentication("Cookies")
         options.LoginPath = new PathString("/Home/Login");
         options.AccessDeniedPath = new PathString("/deny");
     });
-builder.Services.AddSingleton<Data>(new Data(builder.Configuration.GetConnectionString("Test"), builder.Environment.IsDevelopment()));
+builder.Services.AddSingleton(new Data(builder.Configuration.GetConnectionString("Test") ?? "",
+    builder.Environment.IsDevelopment()));
 // builder.Services.AddSingleton<SecretManager>();
 builder.Services.AddSingleton<VersionManager>();
 builder.Services.AddScoped<UserManager>();
@@ -42,9 +44,8 @@ app.UseHttpLoggingMiddleware(); // log http requests to database
 app.UseAuthentication();
 app.UseAuthorization();
 
-app.MapControllerRoute(
-    name: "default",
-    pattern: "{controller}/{action}/{id?}");
+app.MapControllerRoute("default",
+    "{controller}/{action}/{id?}");
 
 app.MapFallbackToFile("/", "index.html");
 app.MapFallbackToFile("/index", "index.html");
@@ -52,8 +53,12 @@ app.MapFallbackToFile("/download", "download.html");
 app.MapFallbackToFile("/help", "help.html");
 app.MapFallbackToFile("/privacy", "privacy.html");
 app.MapFallbackToFile("/privacy-en", "privacy-en.html");
-app.MapFallback("/deny", async r => await r.Response.WriteAsync("access denied"));
+app.MapFallback("/deny", async r =>
+{
+    r.Response.StatusCode = 403;
+    await r.Response.WriteAsync("access denied");
+});
 app.MapHub<ScheduleSyncHub>("/schedulesynchub");
 
 app.Run();
-NLog.LogManager.Shutdown();
+LogManager.Shutdown();

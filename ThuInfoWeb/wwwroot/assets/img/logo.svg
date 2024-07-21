@@ -1,15 +1,15 @@
 <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
     <rect x="0.833333" y="0.833333" width="38.3333" height="38.3333" rx="9.16667" fill="#A652CB" stroke="black"
-        stroke-width="1.66667" />
-    <circle cx="20.0007" cy="19.9997" r="16.6667" fill="#A652CB" />
+          stroke-width="1.66667"/>
+    <circle cx="20.0007" cy="19.9997" r="16.6667" fill="#A652CB"/>
     <path opacity="0.797947"
-        d="M11.207 11.6616C11.207 11.6616 15.5389 13.9139 17.424 16.0243C18.3729 17.0865 19.0962 18.2537 19.0962 19.716C19.0962 21.1784 19.0962 22.2999 19.0962 22.2999"
-        stroke="white" stroke-width="2.83688" stroke-linecap="round" />
+          d="M11.207 11.6616C11.207 11.6616 15.5389 13.9139 17.424 16.0243C18.3729 17.0865 19.0962 18.2537 19.0962 19.716C19.0962 21.1784 19.0962 22.2999 19.0962 22.2999"
+          stroke="white" stroke-width="2.83688" stroke-linecap="round"/>
     <path opacity="0.797947"
-        d="M28.7422 11.6616C28.7422 11.6616 24.4103 13.9139 22.5252 16.0243C21.5763 17.0865 20.853 18.2537 20.853 19.716C20.853 21.1784 20.853 22.2999 20.853 22.2999"
-        stroke="white" stroke-width="2.83688" stroke-linecap="round" />
+          d="M28.7422 11.6616C28.7422 11.6616 24.4103 13.9139 22.5252 16.0243C21.5763 17.0865 20.853 18.2537 20.853 19.716C20.853 21.1784 20.853 22.2999 20.853 22.2999"
+          stroke="white" stroke-width="2.83688" stroke-linecap="round"/>
     <path d="M20.0006 8.40359V25.7086" stroke="white" stroke-width="4.68085" stroke-linecap="round"
-        stroke-linejoin="round" />
+          stroke-linejoin="round"/>
     <path d="M15.2402 24.9014L19.859 31.4186L24.6553 24.9014" stroke="white" stroke-width="4.11347"
-        stroke-linecap="round" stroke-linejoin="round" />
+          stroke-linecap="round" stroke-linejoin="round"/>
 </svg>

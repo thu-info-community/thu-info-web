@@ -1,8 +1,12 @@
-﻿namespace ThuInfoWeb.Models
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace ThuInfoWeb.Models;
+
+public class UserViewModel
 {
-    public class UserViewModel
-    {
-        public string Name { get; set; }
-        public bool IsAdmin { get; set; }
-    }
+    [Required]
+    public string? Name { get; set; }
+
+    [Required]
+    public bool IsAdmin { get; set; } = false;
 }

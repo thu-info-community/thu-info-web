@@ -1,29 +1,32 @@
-﻿using FreeSql.DataAnnotations;
-using System.Text.Json.Serialization;
+﻿using System.Text.Json.Serialization;
+using FreeSql.DataAnnotations;
 
-namespace ThuInfoWeb.DBModels
+namespace ThuInfoWeb.DBModels;
+
+public class Announce
 {
-    public class Announce
-    {
-        [Column(IsIdentity = true, IsPrimary = true)]
-        public int Id { get; set; }
+    [Column(IsIdentity = true, IsPrimary = true)]
+    public int Id { get; init; }
 
-        public string Title { get; set; }
+    [Column(StringLength = 50, IsNullable = false)]
+    public string Title { get; init; } = string.Empty;
 
-        [Column(StringLength = -1)]
-        public string Content { get; set; }
+    [Column(StringLength = -1, IsNullable = false)]
+    public string Content { get; init; } = string.Empty;
 
-        public string Author { get; set; }
+    [Column(StringLength = 50, IsNullable = false)]
+    public string Author { get; init; } = string.Empty;
 
-        public DateTime CreatedTime { get; set; }
+    [Column(IsNullable = false)]
+    public DateTime CreatedTime { get; init; }
 
-        [JsonIgnore]
-        public bool IsActive { get; set; }
+    [JsonIgnore]
+    [Column(IsNullable = false)]
+    public bool IsActive { get; init; }
 
-        [Column(StringLength = 10, IsNullable = false)]
-        public string VisibleNotAfter { get; set; }
+    [Column(StringLength = 10, IsNullable = false)]
+    public string VisibleNotAfter { get; init; } = "9.9.9";
 
-        [Column(StringLength = 30, IsNullable = false)]
-        public string VisibleExact { get; set; }
-    }
+    [Column(StringLength = 30, IsNullable = false)]
+    public string VisibleExact { get; init; } = "";
 }

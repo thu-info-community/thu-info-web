@@ -1,20 +1,28 @@
 ﻿using FreeSql.DataAnnotations;
 
-namespace ThuInfoWeb.DBModels
+namespace ThuInfoWeb.DBModels;
+
+public class Socket
 {
-    public class Socket
+    public enum SocketStatus
     {
-        [Column(IsPrimary = true)]
-        public int SeatId { get; set; }
-        public int SectionId { get; set; }
-        public SocketStatus Status { get; set; }
-        public DateTime CreatedTime { get; set; }
-        public DateTime UpdatedTime { get; set; }
-        public enum SocketStatus
-        {
-            Unknown,
-            Available,
-            Unavailable
-        }
+        Unknown,
+        Available,
+        Unavailable
     }
+
+    [Column(IsPrimary = true)]
+    public int SeatId { get; set; }
+
+    [Column(IsNullable = false)]
+    public int SectionId { get; set; }
+
+    [Column(IsNullable = false)]
+    public SocketStatus Status { get; set; }
+
+    [Column(IsNullable = false)]
+    public DateTime CreatedTime { get; set; }
+
+    [Column(IsNullable = false)]
+    public DateTime UpdatedTime { get; set; }
 }

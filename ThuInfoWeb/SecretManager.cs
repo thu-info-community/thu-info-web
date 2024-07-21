@@ -1,9 +1,3 @@
-﻿namespace ThuInfoWeb
-{
-    public class SecretManager
-    {
-        public SecretManager()
-        {
-        }
-    }
-}
+﻿namespace ThuInfoWeb;
+
+public class SecretManager;
