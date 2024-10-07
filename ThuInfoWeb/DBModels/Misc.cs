@@ -27,4 +27,13 @@ public class Misc
     /// </summary>
     [Column(IsNullable = false)]
     public int CardIVersion { get; init; }
+    
+    /// <summary>
+    ///     Updated school calendar year.
+    /// </summary>
+    /// <remarks>
+    ///    To update, download school calendar from info and manually upload it to the server.
+    /// </remarks>
+    [Column(IsNullable = false)]
+    public int SchoolCalendarYear { get; init; }
 }

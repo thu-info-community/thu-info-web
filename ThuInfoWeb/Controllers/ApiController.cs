@@ -146,4 +146,10 @@ public class ApiController(Data data, VersionManager versionManager, FeedbackNot
     {
         return Ok(new { Version = (await data.GetMiscAsync())?.CardIVersion ?? -1 });
     }
+    
+    [Route("SchoolCalendarYear")]
+    public async Task<IActionResult> SchoolCalendarYear()
+    {
+        return Ok(new { Year = (await data.GetMiscAsync())?.SchoolCalendarYear ?? -1 });
+    }
 }
