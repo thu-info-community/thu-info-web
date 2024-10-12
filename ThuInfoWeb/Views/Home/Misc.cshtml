@@ -21,6 +21,12 @@
             @Model.CardIVersion
         </div>
     </li>
+    <li class="list-group-item d-flex justify-content-between align-items-start">
+        <div class="ms-2 me-auto">
+            <div class="fw-bold">最新校历学年</div>
+            @Model.SchoolCalendarYear
+        </div>
+    </li>
 </ol>
 
 <form asp-action="Misc" method="post">
@@ -39,6 +45,11 @@
         <label class="form-label">校园卡接口版本</label>
         <input asp-for="CardIVersion" class="form-control" value="@Model.CardIVersion">
         <span asp-validation-for="CardIVersion" class="text-danger"></span>
+    </div>
+    <div class="mb-3">
+        <label class="form-label">最新校历学年</label>
+        <input asp-for="SchoolCalendarYear" class="form-control" value="@Model.SchoolCalendarYear">
+        <span asp-validation-for="SchoolCalendarYear" class="text-danger"></span>
     </div>
     <button type="submit" class="btn btn-primary">提交修改</button>
 </form>

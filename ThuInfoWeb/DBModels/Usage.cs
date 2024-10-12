@@ -23,7 +23,8 @@ public class Usage
         NetworkDetail,
         OnlineDevices,
         SchoolCalendar,
-        CampusCard
+        CampusCard,
+        Income
     }
 
     [Column(IsPrimary = true, IsIdentity = true)]

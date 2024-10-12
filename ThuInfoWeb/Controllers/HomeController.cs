@@ -252,7 +252,10 @@ public class HomeController(ILogger<HomeController> logger, Data data, UserManag
         var misc = await data.GetMiscAsync() ?? new Misc();
         return View(new MiscViewModel
         {
-            ApkUrl = misc.ApkUrl, QrCodeContent = misc.QrCodeContent, CardIVersion = misc.CardIVersion
+            ApkUrl = misc.ApkUrl,
+            QrCodeContent = misc.QrCodeContent,
+            CardIVersion = misc.CardIVersion,
+            SchoolCalendarYear = misc.SchoolCalendarYear
         });
     }
 
@@ -264,7 +267,10 @@ public class HomeController(ILogger<HomeController> logger, Data data, UserManag
             return View(vm);
         var misc = new Misc
         {
-            ApkUrl = vm.ApkUrl ?? "", QrCodeContent = vm.QrCodeContent ?? "", CardIVersion = vm.CardIVersion
+            ApkUrl = vm.ApkUrl ?? "",
+            QrCodeContent = vm.QrCodeContent ?? "",
+            CardIVersion = vm.CardIVersion,
+            SchoolCalendarYear = vm.SchoolCalendarYear
         };
         var result = await data.UpdateMiscAsync(misc);
         if (result != 1)
