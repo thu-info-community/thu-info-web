@@ -10,6 +10,7 @@ builder.Logging.ClearProviders();
 builder.Host.UseNLog();
 
 // Add services to the container.
+builder.Services.AddSingleton<LoginAttemptService>();
 builder.Services.AddControllersWithViews().AddJsonOptions(x => x.JsonSerializerOptions.AllowTrailingCommas = true);
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddAuthentication("Cookies")

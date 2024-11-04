@@ -7,7 +7,7 @@ using ThuInfoWeb.Models;
 namespace ThuInfoWeb.Controllers;
 
 public class HomeController(ILogger<HomeController> logger, Data data, UserManager userManager,
-    VersionManager versionManager)
+    VersionManager versionManager, LoginAttemptService loginAttemptService)
     : Controller
 {
     private readonly ILogger<HomeController> _logger = logger;
@@ -62,12 +62,18 @@ public class HomeController(ILogger<HomeController> logger, Data data, UserManag
     {
         if (!ModelState.IsValid)
             return View(vm);
+        if (loginAttemptService.IsBlocked(vm.Name))
+        {
+            ModelState.AddModelError(nameof(vm.Name), "Your account is temporarily locked due to multiple failed login attempts.");
+            return View(model);
+        }
         // get the user and check if the password is correct
         var user = vm.Name != null ? await data.GetUserAsync(vm.Name) : null;
         if (user is null || vm.Password?.ToSHA256Hex() != user.PasswordHash)
         {
             ModelState.AddModelError(nameof(vm.Name), "用户名或密码错误");
             ModelState.AddModelError(nameof(vm.Password), "用户名或密码错误");
+            loginAttemptService.RecordAttempt(model.Name);
             return View(vm);
         }
 
