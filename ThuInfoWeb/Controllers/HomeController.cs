@@ -65,7 +65,7 @@ public class HomeController(ILogger<HomeController> logger, Data data, UserManag
         if (loginAttemptService.IsBlocked(vm.Name))
         {
             ModelState.AddModelError(nameof(vm.Name), "Your account is temporarily locked due to multiple failed login attempts.");
-            return View(model);
+            return View(vm);
         }
         // get the user and check if the password is correct
         var user = vm.Name != null ? await data.GetUserAsync(vm.Name) : null;
