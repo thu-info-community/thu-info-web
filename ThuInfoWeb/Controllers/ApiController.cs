@@ -123,7 +123,7 @@ public class ApiController(Data data, VersionManager versionManager, FeedbackNot
         }
     }
 
-    [HttpPost]
+    /* [HttpPost]
     [Route("Socket")]
     public async Task<IActionResult> Socket(SocketDto dto)
     {
@@ -131,7 +131,7 @@ public class ApiController(Data data, VersionManager versionManager, FeedbackNot
         if (result != 1)
             return BadRequest();
         return Ok();
-    }
+    } */
 
     [Route("Version/{os}")]
     public IActionResult Version([FromRoute] string os)
