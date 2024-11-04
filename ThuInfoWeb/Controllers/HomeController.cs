@@ -73,7 +73,7 @@ public class HomeController(ILogger<HomeController> logger, Data data, UserManag
         {
             ModelState.AddModelError(nameof(vm.Name), "用户名或密码错误");
             ModelState.AddModelError(nameof(vm.Password), "用户名或密码错误");
-            loginAttemptService.RecordAttempt(model.Name);
+            loginAttemptService.RecordAttempt(vm.Name);
             return View(vm);
         }
 
