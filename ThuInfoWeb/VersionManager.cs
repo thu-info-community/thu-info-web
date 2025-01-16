@@ -85,7 +85,7 @@ public class VersionManager(ILogger<VersionManager> logger, Data data, IConfigur
                     if (version.VersionName == _currentVersionOfAndroid.VersionName)
                         logger.LogInformation("No newer version is available for Android (current version is {VersionName}),"
                                               + " check update for Android ok", version.VersionName);
-                    
+
                     if (await data.CreateVersionAsync(version) != 1)
                         throw new Exception("Unknown Error");
                     logger.LogInformation("Found new version for Android: {VersionName}, check update ok",
@@ -107,7 +107,7 @@ public class VersionManager(ILogger<VersionManager> logger, Data data, IConfigur
             {
                 if (os == OS.Android)
                 {
-                    const string url = "https://api.github.com/repos/UNIDY2002/THUInfo/releases/latest";
+                    const string url = "https://api.github.com/repos/thu-info-community/thu-info-app/releases/latest";
                     var content = await _client.GetStringAsync(url);
                     var json = JsonNode.Parse(content)!;
                     var versionName = (string)json["name"]!;

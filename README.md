@@ -1,5 +1,5 @@
 # THUInfo Web
-The web server application of [THUInfo](https://github.com/UNIDY2002/THUInfo)
+The web server application of [THUInfo](https://github.com/thu-info-community/thu-info-app)
 # Build Instruction
 ## Step 1
 Install dotnet sdk 8.0.
