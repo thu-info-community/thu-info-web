@@ -4,6 +4,17 @@ using ThuInfoWeb.DBModels;
 
 namespace ThuInfoWeb.Controllers;
 
+public class UsageRequest
+{
+    public Guid Uuid { get; set; }
+    public int Function { get; set; }
+}
+
+public class StartupRequest
+{
+    public Guid Uuid { get; set; }
+}
+
 [Route("[controller]/[action]")]
 [ApiController]
 public class StatController(Data data) : ControllerBase
@@ -20,6 +31,23 @@ public class StatController(Data data) : ControllerBase
         return Ok();
     }
 
+    [HttpPost]
+    public async Task<IActionResult> Usage([FromBody] UsageRequest request)
+    {
+        if (!Enum.IsDefined(typeof(Usage.FunctionType), request.Function))
+            return BadRequest("功能不存在");
+        var usage = new Usage
+        {
+            Function = request.Function,
+            Uuid = request.Uuid,
+            CreatedTime = DateTime.Now
+        };
+        var result = await data.CreateUsageAsync(usage);
+        if (result != 1)
+            return BadRequest();
+        return Ok();
+    }
+
     [Route("")]
     [Authorize(Roles = "admin")]
     public async Task<IActionResult> UsageData()
@@ -30,6 +58,20 @@ public class StatController(Data data) : ControllerBase
     public async Task<IActionResult> Startup()
     {
         var s = new Startup { CreatedTime = DateTime.Now };
+        var result = await data.CreateStartupAsync(s);
+        if (result != 1)
+            return BadRequest();
+        return Ok();
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> Startup([FromBody] StartupRequest request)
+    {
+        var s = new Startup
+        {
+            Uuid = request.Uuid,
+            CreatedTime = DateTime.Now
+        };
         var result = await data.CreateStartupAsync(s);
         if (result != 1)
             return BadRequest();

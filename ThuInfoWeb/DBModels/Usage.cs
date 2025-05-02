@@ -35,4 +35,7 @@ public class Usage
 
     [Column(IsNullable = false)]
     public DateTime CreatedTime { get; set; }
+
+    [Column(IsNullable = true)]
+    public Guid? Uuid { get; set; }
 }

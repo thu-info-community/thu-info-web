@@ -9,4 +9,7 @@ public class Startup
 
     [Column(IsNullable = false)]
     public DateTime CreatedTime { get; init; }
+
+    [Column(IsNullable = true)]
+    public Guid? Uuid { get; set; }
 }
