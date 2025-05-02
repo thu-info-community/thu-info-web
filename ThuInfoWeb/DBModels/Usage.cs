@@ -24,7 +24,8 @@ public class Usage
         OnlineDevices,
         SchoolCalendar,
         CampusCard,
-        Income
+        Income,
+        DeepSeek
     }
 
     [Column(IsPrimary = true, IsIdentity = true)]
