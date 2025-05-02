@@ -38,7 +38,7 @@ public class StatController(Data data) : ControllerBase
             return BadRequest("功能不存在");
         var usage = new Usage
         {
-            Function = request.Function,
+            Function = (Usage.FunctionType)request.Function,
             Uuid = request.Uuid,
             CreatedTime = DateTime.Now
         };
