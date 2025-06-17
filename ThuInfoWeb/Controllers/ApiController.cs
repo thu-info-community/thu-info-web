@@ -19,15 +19,22 @@ public class ApiController(Data data, VersionManager versionManager, FeedbackNot
     /// </summary>
     /// <param name="id">if entered, this will return single value</param>
     /// <param name="page">if entered, this will return up to 5 values in an array.</param>
+    /// <param name="version">if entered, this will filter the announcement by version, only return those visible to this version.</param>
     /// <returns>In json format.</returns>
     [Route("Announce")]
-    public async Task<IActionResult> Announce([FromQuery] int? id, [FromQuery] int? page)
+    public async Task<IActionResult> Announce([FromQuery] int? id, [FromQuery] int? page, [FromQuery] string? version)
     {
         if (page <= 0)
             return BadRequest("page必须是正整数");
+
+        version ??= "0.0.0";
+
+        if (!version.IsValidVersionNumber())
+            return BadRequest("version必须是有效的版本号格式，格式为x.x.x");
+
         if (page is not null)
         {
-            var a = await data.GetActiveAnnouncesAsync((int)page, 5);
+            var a = await data.GetActiveAnnouncesAsync((int)page, 5, version);
             return Ok(a);
         }
         else

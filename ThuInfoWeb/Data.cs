@@ -88,10 +88,17 @@ public class Data
         return await _fsql.Select<Announce>().OrderByDescending(x => x.Id).Page(page, pageSize).ToListAsync();
     }
 
-    public async Task<List<Announce>> GetActiveAnnouncesAsync(int page, int pageSize)
+    public async Task<List<Announce>> GetActiveAnnouncesAsync(int page, int pageSize, string version)
     {
-        return await _fsql.Select<Announce>().OrderByDescending(x => x.Id).Page(page, pageSize).Where(x => x.IsActive)
+        var l = await _fsql.Select<Announce>()
+            .Where(x => x.IsActive)
+            .OrderByDescending(x => x.Id)
             .ToListAsync();
+
+        // The exact match can't be performed in the SQL query, so we have to filter it in memory.
+        var filtered = l.Where(x => x.VisibleExact.Split(',').Any(v => v == version) || !version.VersionGreaterThan(x.VisibleNotAfter));
+        
+        return filtered.Skip((page - 1) * pageSize).Take(pageSize).ToList();
     }
 
     public async Task<int> CreateAnnounceAsync(Announce a)
