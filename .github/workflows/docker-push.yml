@@ -1,4 +1,4 @@
-name: Docker Build and Push Image to DockerHub
+name: Docker Build and Push Image to GHCR
 
 on:
   push:
@@ -8,18 +8,22 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
     steps:
       - uses: actions/checkout@v4
 
-      - name: Docker Login
+      - name: Docker Login to GHCR
         uses: docker/login-action@v3.2.0
         with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build Image and Push to DockerHub
+      - name: Build Image and Push to GHCR
         uses: docker/build-push-action@v6.3.0
         with:
           file: dockerfile
-          tags: ${{ secrets.DOCKERHUB_USERNAME }}/thuinfo-web:latest
+          tags: ghcr.io/${{ github.repository }}:latest
           push: true
