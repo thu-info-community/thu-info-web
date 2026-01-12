@@ -9,10 +9,10 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Build Image
-        uses: docker/build-push-action@v6.3.0
+        uses: docker/build-push-action@v6
         with:
           tags: ghcr.io/${{ github.repository }}:latest
           push: false
