@@ -285,6 +285,71 @@ public class HomeController(ILogger<HomeController> logger, Data data, UserManag
     }
 
     [Authorize(Roles = "admin")]
+    public async Task<IActionResult> JieliWashers()
+    {
+        var list = await data.GetJieliWashersAsync();
+        return View(list.Select(x => new JieliWasherViewModel
+        {
+            Id = x.Id,
+            Building = x.Building,
+            Name = x.Name,
+            CreatedTime = x.CreatedTime
+        }).ToList());
+    }
+
+    [HttpPost]
+    [Authorize(Roles = "admin")]
+    public async Task<IActionResult> CreateJieliWasher(JieliWasherViewModel vm)
+    {
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
+        var washer = new JieliWasher
+        {
+            Id = vm.Id!.Trim(),
+            Building = vm.Building!.Trim(),
+            Name = vm.Name!.Trim(),
+            CreatedTime = DateTime.Now
+        };
+
+        try
+        {
+            var result = await data.CreateJieliWasherAsync(washer);
+            if (result != 1)
+                return BadRequest("创建失败");
+        }
+        catch (Exception ex)
+        {
+            return BadRequest("创建失败，可能是ID已存在：" + ex.Message);
+        }
+    
+        return RedirectToAction(nameof(JieliWashers));
+    }
+
+    [HttpPost]
+    [Authorize(Roles = "admin")]
+    public async Task<IActionResult> UpdateJieliWasher(JieliWasherViewModel vm)
+    {
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
+        var result = await data.UpdateJieliWasherAsync(vm.Id!.Trim(), vm.Building!.Trim(), vm.Name!.Trim());
+        if (result != 1)
+            return BadRequest("更新失败");
+        return RedirectToAction(nameof(JieliWashers));
+    }
+
+    [HttpPost]
+    [Authorize(Roles = "admin")]
+    public async Task<IActionResult> DeleteJieliWasher([FromForm] string Id)
+    {
+        if (string.IsNullOrWhiteSpace(Id))
+            return BadRequest("id不能为空");
+        var result = await data.DeleteJieliWasherAsync(Id.Trim());
+        if (result != 1)
+            return BadRequest("删除失败");
+        return RedirectToAction(nameof(JieliWashers));
+    }
+
+    [Authorize(Roles = "admin")]
     [Route("Home/CheckUpdate/{os}")]
     public IActionResult CheckUpdate([FromRoute] string os)
     {
