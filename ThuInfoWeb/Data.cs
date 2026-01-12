@@ -198,7 +198,7 @@ public class Data
         var query = _fsql.Select<JieliWasher>();
         if (!string.IsNullOrWhiteSpace(building))
             query = query.Where(x => x.Building == building);
-        return await query.OrderBy(x => x.Building).OrderBy(x => x.Name).ToListAsync();
+        return await query.OrderBy(x => x.Building).ToListAsync();
     }
 
     public async Task<int> CreateJieliWasherAsync(JieliWasher washer)

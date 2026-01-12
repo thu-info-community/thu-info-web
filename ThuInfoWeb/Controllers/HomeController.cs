@@ -310,9 +310,18 @@ public class HomeController(ILogger<HomeController> logger, Data data, UserManag
             Name = vm.Name!.Trim(),
             CreatedTime = DateTime.Now
         };
-        var result = await data.CreateJieliWasherAsync(washer);
-        if (result != 1)
-            return BadRequest("创建失败");
+
+        try
+        {
+            var result = await data.CreateJieliWasherAsync(washer);
+            if (result != 1)
+                return BadRequest("创建失败");
+        }
+        catch (Exception ex)
+        {
+            return BadRequest("创建失败，可能是ID已存在：" + ex.Message);
+        }
+    
         return RedirectToAction(nameof(JieliWashers));
     }
 
@@ -330,11 +339,11 @@ public class HomeController(ILogger<HomeController> logger, Data data, UserManag
 
     [HttpPost]
     [Authorize(Roles = "admin")]
-    public async Task<IActionResult> DeleteJieliWasher([FromForm] string id)
+    public async Task<IActionResult> DeleteJieliWasher([FromForm] string Id)
     {
-        if (string.IsNullOrWhiteSpace(id))
+        if (string.IsNullOrWhiteSpace(Id))
             return BadRequest("id不能为空");
-        var result = await data.DeleteJieliWasherAsync(id);
+        var result = await data.DeleteJieliWasherAsync(Id.Trim());
         if (result != 1)
             return BadRequest("删除失败");
         return RedirectToAction(nameof(JieliWashers));

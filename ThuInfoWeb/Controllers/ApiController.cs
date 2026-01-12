@@ -161,9 +161,9 @@ public class ApiController(Data data, VersionManager versionManager, FeedbackNot
     }
 
     [Route("JieliWashers")]
-    public async Task<IActionResult> JieliWashers([FromQuery] string? b)
+    public async Task<IActionResult> JieliWashers([FromQuery] string? building)
     {
-        var washers = await data.GetJieliWashersAsync(b);
+        var washers = await data.GetJieliWashersAsync(building);
         return Ok(washers.ToDictionary(w => w.Id, w => w.Name));
     }
 }
