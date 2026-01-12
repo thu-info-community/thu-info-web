@@ -193,6 +193,33 @@ public class Data
         return await _fsql.Insert(s).ExecuteAffrowsAsync();
     }
 
+    public async Task<List<JieliWasher>> GetJieliWashersAsync(string? building = null)
+    {
+        var query = _fsql.Select<JieliWasher>();
+        if (!string.IsNullOrWhiteSpace(building))
+            query = query.Where(x => x.Building == building);
+        return await query.OrderBy(x => x.Building).OrderBy(x => x.Name).ToListAsync();
+    }
+
+    public async Task<int> CreateJieliWasherAsync(JieliWasher washer)
+    {
+        return await _fsql.Insert(washer).ExecuteAffrowsAsync();
+    }
+
+    public async Task<int> UpdateJieliWasherAsync(string id, string building, string name)
+    {
+        return await _fsql.Update<JieliWasher>()
+            .Where(x => x.Id == id)
+            .Set(x => x.Building, building)
+            .Set(x => x.Name, name)
+            .ExecuteAffrowsAsync();
+    }
+
+    public async Task<int> DeleteJieliWasherAsync(string id)
+    {
+        return await _fsql.Delete<JieliWasher>().Where(x => x.Id == id).ExecuteAffrowsAsync();
+    }
+
     public async Task<Dictionary<string, int>> GetStartupDataAsync()
     {
         return await _fsql.Select<Startup>().GroupBy(x => x.CreatedTime.ToString("yyyy MM"))

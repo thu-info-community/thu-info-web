@@ -159,4 +159,11 @@ public class ApiController(Data data, VersionManager versionManager, FeedbackNot
     {
         return Ok(new { Year = (await data.GetMiscAsync())?.SchoolCalendarYear ?? -1 });
     }
+
+    [Route("JieliWashers")]
+    public async Task<IActionResult> JieliWashers([FromQuery] string? b)
+    {
+        var washers = await data.GetJieliWashersAsync(b);
+        return Ok(washers.ToDictionary(w => w.Id, w => w.Name));
+    }
 }

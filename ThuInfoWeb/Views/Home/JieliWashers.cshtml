@@ -1,0 +1,62 @@
+﻿@model List<JieliWasherViewModel>
+@{
+    ViewData["Title"] = "JieliWashers";
+}
+<div class="container">
+    <form asp-action="CreateJieliWasher" method="post" class="mb-4">
+        <h3>新增洗衣机</h3>
+        <div class="mb-3">
+            <label class="form-label" for="create-id">ID</label>
+            <input class="form-control" id="create-id" name="Id" maxlength="20" required>
+        </div>
+        <div class="mb-3">
+            <label class="form-label" for="create-building">楼号</label>
+            <input class="form-control" id="create-building" name="Building" maxlength="20" required>
+        </div>
+        <div class="mb-3">
+            <label class="form-label" for="create-name">名称</label>
+            <input class="form-control" id="create-name" name="Name" maxlength="20" required>
+        </div>
+        <button type="submit" class="btn btn-primary">新增</button>
+    </form>
+    <hr/>
+    <h3>管理洗衣机</h3>
+    <table class="table align-middle">
+        <thead>
+        <tr class="text-center">
+            <th scope="col">ID</th>
+            <th scope="col">楼号</th>
+            <th scope="col">名称</th>
+            <th scope="col">创建时间</th>
+            <th scope="col">操作</th>
+        </tr>
+        </thead>
+        <tbody>
+        @for (var i = 0; i < Model.Count; i++)
+        {
+            var item = Model[i];
+            var formId = $"update-{i}";
+            <tr>
+                <td class="text-center">@item.Id</td>
+                <td>
+                    <input class="form-control" name="Building" value="@item.Building" maxlength="20" required form="@formId" />
+                </td>
+                <td>
+                    <input class="form-control" name="Name" value="@item.Name" maxlength="20" required form="@formId" />
+                </td>
+                <td class="text-center">@item.CreatedTime</td>
+                <td class="text-center">
+                    <form asp-action="UpdateJieliWasher" method="post" id="@formId" class="d-inline">
+                        <input type="hidden" name="Id" value="@item.Id" />
+                        <button type="submit" class="btn btn-outline-primary">保存</button>
+                    </form>
+                    <form asp-action="DeleteJieliWasher" method="post" class="d-inline">
+                        <input type="hidden" name="id" value="@item.Id" />
+                        <button type="submit" class="btn btn-link text-danger">删除</button>
+                    </form>
+                </td>
+            </tr>
+        }
+        </tbody>
+    </table>
+</div>
