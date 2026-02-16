@@ -361,7 +361,7 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
-/ThuInfoWeb/test.db
+/ThuInfoWeb/test.db*
 
 # Rider .idea
 .idea/

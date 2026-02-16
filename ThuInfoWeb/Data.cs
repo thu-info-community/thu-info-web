@@ -97,8 +97,8 @@ public class Data
 
         // The exact match can't be performed in the SQL query, so we have to filter it in memory.
         var filtered = l.Where(x => x.VisibleExact.Split(',').Any(v => v == version) || !version.VersionGreaterThan(x.VisibleNotAfter));
-        
-        return filtered.Skip((page - 1) * pageSize).Take(pageSize).ToList();
+
+        return [.. filtered.Skip((page - 1) * pageSize).Take(pageSize)];
     }
 
     public async Task<int> CreateAnnounceAsync(Announce a)
@@ -225,6 +225,84 @@ public class Data
         return await _fsql.Select<Startup>().GroupBy(x => x.CreatedTime.ToString("yyyy MM"))
             .OrderBy(x => x.Key)
             .ToDictionaryAsync(x => x.Count());
+    }
+
+    public async Task<Dictionary<string, double>> GetWeeklyAverageDailyActiveUsersAsync()
+    {
+        var dailyActiveUsers = await GetDailyActiveUsersAsync();
+        if (dailyActiveUsers.Count == 0)
+            return [];
+
+        var startDate = dailyActiveUsers.Keys.Min();
+        var endDate = dailyActiveUsers.Keys.Max();
+        var weeklyBuckets = new SortedDictionary<DateTime, List<int>>();
+
+        for (var date = startDate; date <= endDate; date = date.AddDays(1))
+        {
+            var weekStart = GetWeekStart(date);
+            if (!weeklyBuckets.TryGetValue(weekStart, out var bucket))
+            {
+                bucket = [];
+                weeklyBuckets[weekStart] = bucket;
+            }
+
+            bucket.Add(dailyActiveUsers.GetValueOrDefault(date, 0));
+        }
+
+        return weeklyBuckets.ToDictionary(
+            x => x.Key.ToString("yyyy-MM-dd"),
+            x => Math.Round(x.Value.Average(), 2));
+    }
+
+    public async Task<Dictionary<string, double>> GetWeekdayAverageActiveUsersAsync()
+    {
+        var dailyActiveUsers = await GetDailyActiveUsersAsync();
+        if (dailyActiveUsers.Count == 0)
+            return [];
+
+        var startDate = dailyActiveUsers.Keys.Min();
+        var endDate = dailyActiveUsers.Keys.Max();
+        var weekdayBuckets = new Dictionary<DayOfWeek, List<int>>
+        {
+            [DayOfWeek.Monday] = [],
+            [DayOfWeek.Tuesday] = [],
+            [DayOfWeek.Wednesday] = [],
+            [DayOfWeek.Thursday] = [],
+            [DayOfWeek.Friday] = [],
+            [DayOfWeek.Saturday] = [],
+            [DayOfWeek.Sunday] = []
+        };
+
+        for (var date = startDate; date <= endDate; date = date.AddDays(1))
+            weekdayBuckets[date.DayOfWeek].Add(dailyActiveUsers.GetValueOrDefault(date, 0));
+
+        var orderedDays = new[]
+        {
+            DayOfWeek.Monday, DayOfWeek.Tuesday, DayOfWeek.Wednesday, DayOfWeek.Thursday,
+            DayOfWeek.Friday, DayOfWeek.Saturday, DayOfWeek.Sunday
+        };
+        return orderedDays.ToDictionary(
+            day => day.ToString(),
+            day => Math.Round(weekdayBuckets[day].Average(), 2));
+    }
+
+    private async Task<Dictionary<DateTime, int>> GetDailyActiveUsersAsync()
+    {
+        var startups = await _fsql.Select<Startup>()
+            .Where(x => x.Uuid != null)
+            .ToListAsync(x => new { x.CreatedTime, x.Uuid });
+
+        return startups
+            .GroupBy(x => x.CreatedTime.Date)
+            .ToDictionary(
+                group => group.Key,
+                group => group.Select(x => x.Uuid!.Value).Distinct().Count());
+    }
+
+    private static DateTime GetWeekStart(DateTime date)
+    {
+        var offset = ((int)date.DayOfWeek + 6) % 7; // Monday = 0
+        return date.AddDays(-offset).Date;
     }
 #if DEBUG
     public async Task GenStartupDataAsync()

@@ -60,7 +60,7 @@ public class HomeController(ILogger<HomeController> logger, Data data, UserManag
     [HttpPost]
     public async Task<IActionResult> Login(LoginViewModel vm)
     {
-        if (!ModelState.IsValid)
+        if (!ModelState.IsValid || vm.Name is null || vm.Password is null)
             return View(vm);
         if (loginAttemptService.IsBlocked(vm.Name))
         {
@@ -73,7 +73,7 @@ public class HomeController(ILogger<HomeController> logger, Data data, UserManag
         {
             ModelState.AddModelError(nameof(vm.Name), "用户名或密码错误");
             ModelState.AddModelError(nameof(vm.Password), "用户名或密码错误");
-            loginAttemptService.RecordAttempt(vm.Name);
+            loginAttemptService.RecordAttempt(vm.Name!);
             return View(vm);
         }
 
@@ -321,7 +321,7 @@ public class HomeController(ILogger<HomeController> logger, Data data, UserManag
         {
             return BadRequest("创建失败，可能是ID已存在：" + ex.Message);
         }
-    
+
         return RedirectToAction(nameof(JieliWashers));
     }
 

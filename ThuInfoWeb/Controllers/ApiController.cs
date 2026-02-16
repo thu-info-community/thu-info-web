@@ -79,7 +79,10 @@ public class ApiController(Data data, VersionManager versionManager, FeedbackNot
         return Ok((await data.GetAllRepliedFeedbacksAsync())
             .Select(x => new
             {
-                content = x.Content, reply = x.Reply, replierName = x.ReplierName, repliedTime = x.RepliedTime
+                content = x.Content,
+                reply = x.Reply,
+                replierName = x.ReplierName,
+                repliedTime = x.RepliedTime
             }).ToList());
     }
 
@@ -153,7 +156,7 @@ public class ApiController(Data data, VersionManager versionManager, FeedbackNot
     {
         return Ok(new { Version = (await data.GetMiscAsync())?.CardIVersion ?? -1 });
     }
-    
+
     [Route("SchoolCalendarYear")]
     public async Task<IActionResult> SchoolCalendarYear()
     {

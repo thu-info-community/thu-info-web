@@ -84,6 +84,20 @@ public class StatController(Data data) : ControllerBase
     {
         return Ok(await data.GetStartupDataAsync());
     }
+
+    [Route("")]
+    [Authorize(Roles = "admin")]
+    public async Task<IActionResult> DailyActiveUsersWeeklyAverage()
+    {
+        return Ok(await data.GetWeeklyAverageDailyActiveUsersAsync());
+    }
+
+    [Route("")]
+    [Authorize(Roles = "admin")]
+    public async Task<IActionResult> DailyActiveUsersWeekdayAverage()
+    {
+        return Ok(await data.GetWeekdayAverageActiveUsersAsync());
+    }
 #if DEBUG
     public async Task<IActionResult> GenStartupData()
     {
