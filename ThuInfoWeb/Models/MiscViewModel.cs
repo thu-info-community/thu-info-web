@@ -14,7 +14,7 @@ public class MiscViewModel
 
     [Required]
     public int CardIVersion { get; init; }
-    
+
     [Required]
     public int SchoolCalendarYear { get; init; }
 }

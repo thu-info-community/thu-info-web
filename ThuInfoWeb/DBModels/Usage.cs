@@ -26,15 +26,15 @@ public class Usage
         CampusCard,
         Income,
         DeepSeek,
-    	Home,
-    	News,
-    	Schedule,
-    	DeepSeekCreate,
-    	DeepSeekSend,
-    	DeepSeekSendRAG,
-    	DeepSeekCopy,
-    	DeepSeekRetry,
-    	DeepSeekJump
+        Home,
+        News,
+        Schedule,
+        DeepSeekCreate,
+        DeepSeekSend,
+        DeepSeekSendRAG,
+        DeepSeekCopy,
+        DeepSeekRetry,
+        DeepSeekJump
     }
 
     [Column(IsPrimary = true, IsIdentity = true)]

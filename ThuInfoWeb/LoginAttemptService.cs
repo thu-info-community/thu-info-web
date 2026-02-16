@@ -1,6 +1,8 @@
+namespace ThuInfoWeb;
+
 public class LoginAttemptService
 {
-    private static readonly Dictionary<string, (int Attempts, DateTime LastAttempt)> _loginAttempts = new();
+    private static readonly Dictionary<string, (int Attempts, DateTime LastAttempt)> _loginAttempts = [];
 
     private const int MaxAttempts = 5; // Max allowed attempts
     private readonly TimeSpan _blockDuration = TimeSpan.FromMinutes(15); // Block duration
@@ -27,9 +29,9 @@ public class LoginAttemptService
 
     public void RecordAttempt(string username)
     {
-        if (_loginAttempts.ContainsKey(username))
+        if (_loginAttempts.TryGetValue(username, out (int Attempts, DateTime LastAttempt) value))
         {
-            _loginAttempts[username] = (_loginAttempts[username].Attempts + 1, DateTime.UtcNow);
+            _loginAttempts[username] = (value.Attempts + 1, DateTime.UtcNow);
         }
         else
         {

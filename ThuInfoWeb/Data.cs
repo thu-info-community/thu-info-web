@@ -97,8 +97,8 @@ public class Data
 
         // The exact match can't be performed in the SQL query, so we have to filter it in memory.
         var filtered = l.Where(x => x.VisibleExact.Split(',').Any(v => v == version) || !version.VersionGreaterThan(x.VisibleNotAfter));
-        
-        return filtered.Skip((page - 1) * pageSize).Take(pageSize).ToList();
+
+        return [.. filtered.Skip((page - 1) * pageSize).Take(pageSize)];
     }
 
     public async Task<int> CreateAnnounceAsync(Announce a)
@@ -242,7 +242,7 @@ public class Data
             var weekStart = GetWeekStart(date);
             if (!weeklyBuckets.TryGetValue(weekStart, out var bucket))
             {
-                bucket = new List<int>();
+                bucket = [];
                 weeklyBuckets[weekStart] = bucket;
             }
 
@@ -258,19 +258,19 @@ public class Data
     {
         var dailyActiveUsers = await GetDailyActiveUsersAsync();
         if (dailyActiveUsers.Count == 0)
-            return new Dictionary<string, double>();
+            return [];
 
         var startDate = dailyActiveUsers.Keys.Min();
         var endDate = dailyActiveUsers.Keys.Max();
         var weekdayBuckets = new Dictionary<DayOfWeek, List<int>>
         {
-            [DayOfWeek.Monday] = new List<int>(),
-            [DayOfWeek.Tuesday] = new List<int>(),
-            [DayOfWeek.Wednesday] = new List<int>(),
-            [DayOfWeek.Thursday] = new List<int>(),
-            [DayOfWeek.Friday] = new List<int>(),
-            [DayOfWeek.Saturday] = new List<int>(),
-            [DayOfWeek.Sunday] = new List<int>()
+            [DayOfWeek.Monday] = [],
+            [DayOfWeek.Tuesday] = [],
+            [DayOfWeek.Wednesday] = [],
+            [DayOfWeek.Thursday] = [],
+            [DayOfWeek.Friday] = [],
+            [DayOfWeek.Saturday] = [],
+            [DayOfWeek.Sunday] = []
         };
 
         for (var date = startDate; date <= endDate; date = date.AddDays(1))

@@ -21,7 +21,7 @@ public class VersionManager(ILogger<VersionManager> logger, Data data, IConfigur
     })();
 
     private readonly bool _internalNetworkMode = bool.Parse(configuration["InternalNetworkMode"] ?? "false");
-    private readonly object _lock = new();
+    private readonly Lock _lock = new();
     private Version _currentVersionOfAndroid = data.GetVersionAsync(true).Result ?? new Version();
     private Version _currentVersionOfIOS = data.GetVersionAsync(false).Result ?? new Version();
     private bool _isRunning;
@@ -69,9 +69,12 @@ public class VersionManager(ILogger<VersionManager> logger, Data data, IConfigur
     public async Task CheckUpdateAsync(OS os)
     {
         IsRunning = true;
-        logger.LogInformation("Start checking update for {OS}, current version is {Version}",
-            os == OS.Android ? "Android" : "iOS",
-            os == OS.Android ? _currentVersionOfAndroid.VersionName : _currentVersionOfIOS.VersionName);
+        if (logger.IsEnabled(LogLevel.Information))
+        {
+            logger.LogInformation("Start checking update for {OS}, current version is {Version}",
+                os == OS.Android ? "Android" : "iOS",
+                os == OS.Android ? _currentVersionOfAndroid.VersionName : _currentVersionOfIOS.VersionName);
+        }
 
         try
         {
@@ -83,24 +86,40 @@ public class VersionManager(ILogger<VersionManager> logger, Data data, IConfigur
                         "https://stu.cs.tsinghua.edu.cn/thuinfo/version/android");
                     var version = JsonSerializer.Deserialize<Version>(content)!;
                     if (version.VersionName == _currentVersionOfAndroid.VersionName)
-                        logger.LogInformation("No newer version is available for Android (current version is {VersionName}),"
-                                              + " check update for Android ok", version.VersionName);
+                    {
+                        if (logger.IsEnabled(LogLevel.Information))
+                        {
+                            logger.LogInformation("No newer version is available for Android (current version is {VersionName}),"
+                                                  + " check update for Android ok", version.VersionName);
+                        }
+                    }
 
                     if (await data.CreateVersionAsync(version) != 1)
                         throw new Exception("Unknown Error");
-                    logger.LogInformation("Found new version for Android: {VersionName}, check update ok",
-                        version.VersionName);
+                    if (logger.IsEnabled(LogLevel.Information))
+                    {
+                        logger.LogInformation("Found new version for Android: {VersionName}, check update ok",
+                            version.VersionName);
+                    }
                 }
                 else
                 {
                     var content = await _client.GetStringAsync("https://stu.cs.tsinghua.edu.cn/thuinfo/version/ios");
                     var version = JsonSerializer.Deserialize<Version>(content)!;
                     if (version.VersionName == _currentVersionOfIOS.VersionName)
-                        logger.LogInformation("No newer version is available for iOS(current version is {VersionName}), check update for iOS ok", version.VersionName);
+                    {
+                        if (logger.IsEnabled(LogLevel.Information))
+                        {
+                            logger.LogInformation("No newer version is available for iOS(current version is {VersionName}), check update for iOS ok", version.VersionName);
+                        }
+                    }
 
                     if (await data.CreateVersionAsync(version) != 1)
                         throw new Exception("Unknown Error");
-                    logger.LogInformation("Found new version for iOS: {VersionName}, check update for iOS ok", version.VersionName);
+                    if (logger.IsEnabled(LogLevel.Information))
+                    {
+                        logger.LogInformation("Found new version for iOS: {VersionName}, check update for iOS ok", version.VersionName);
+                    }
                 }
             }
             else
@@ -113,9 +132,12 @@ public class VersionManager(ILogger<VersionManager> logger, Data data, IConfigur
                     var versionName = (string)json["name"]!;
                     if (versionName == _currentVersionOfAndroid.VersionName)
                     {
-                        logger.LogInformation(
-                            "No newer version is available for Android(current version is {VersionName}), check update for Android ok",
-                            versionName);
+                        if (logger.IsEnabled(LogLevel.Information))
+                        {
+                            logger.LogInformation(
+                                "No newer version is available for Android(current version is {VersionName}), check update for Android ok",
+                                versionName);
+                        }
                     }
                     else
                     {
@@ -131,7 +153,10 @@ public class VersionManager(ILogger<VersionManager> logger, Data data, IConfigur
                         var result = await data.CreateVersionAsync(version);
                         if (result != 1)
                             throw new Exception("Unknown Error");
-                        logger.LogInformation("Found new version for Android: {VersionName}, check update ok", versionName);
+                        if (logger.IsEnabled(LogLevel.Information))
+                        {
+                            logger.LogInformation("Found new version for Android: {VersionName}, check update ok", versionName);
+                        }
                     }
                 }
                 else // handle ios
@@ -142,9 +167,12 @@ public class VersionManager(ILogger<VersionManager> logger, Data data, IConfigur
                     var versionName = (string)json["version"]!;
                     if (versionName == _currentVersionOfIOS.VersionName)
                     {
-                        logger.LogInformation(
-                            "No newer version is available for iOS(current version is {VersionName}), check update for iOS ok",
-                            versionName);
+                        if (logger.IsEnabled(LogLevel.Information))
+                        {
+                            logger.LogInformation(
+                                "No newer version is available for iOS(current version is {VersionName}), check update for iOS ok",
+                                versionName);
+                        }
                     }
                     else
                     {
@@ -160,14 +188,20 @@ public class VersionManager(ILogger<VersionManager> logger, Data data, IConfigur
                         var result = await data.CreateVersionAsync(version);
                         if (result != 1)
                             throw new Exception("Unknown Error");
-                        logger.LogInformation("Found new version for iOS: {VersionName}, check update for iOS ok", versionName);
+                        if (logger.IsEnabled(LogLevel.Information))
+                        {
+                            logger.LogInformation("Found new version for iOS: {VersionName}, check update for iOS ok", versionName);
+                        }
                     }
                 }
             }
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Checking update for {OS} failed", os);
+            if (logger.IsEnabled(LogLevel.Error))
+            {
+                logger.LogError(ex, "Checking update for {OS} failed", os);
+            }
         }
         finally
         {

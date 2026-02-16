@@ -4,14 +4,9 @@ using ThuInfoWeb.DBModels;
 namespace ThuInfoWeb;
 
 // You may need to install the Microsoft.AspNetCore.Http.Abstractions package into your project
-public class HttpLoggingMiddleware
+public class HttpLoggingMiddleware(RequestDelegate next)
 {
-    private readonly RequestDelegate _next;
-
-    public HttpLoggingMiddleware(RequestDelegate next)
-    {
-        _next = next;
-    }
+    private readonly RequestDelegate _next = next;
 
     public async Task Invoke(HttpContext context, Data data)
     {

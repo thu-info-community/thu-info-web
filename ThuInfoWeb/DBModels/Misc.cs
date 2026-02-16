@@ -27,7 +27,7 @@ public class Misc
     /// </summary>
     [Column(IsNullable = false)]
     public int CardIVersion { get; init; }
-    
+
     /// <summary>
     ///     Updated school calendar year.
     /// </summary>
