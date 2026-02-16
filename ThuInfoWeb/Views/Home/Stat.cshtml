@@ -1,48 +1,52 @@
 ﻿<div>
     <canvas id="chart"></canvas>
     <canvas id="chart2"></canvas>
+    <canvas id="chart3"></canvas>
+    <canvas id="chart4"></canvas>
 </div>
 <script src="~/lib/Chart.js/chart.min.js"></script>
 <script>
-    fetch("/Stat/UsageData").then(res=>{
-        res.json().then(j=>{
-            const data = {
-                datasets:[
-                    {
-                        label:"function usage",
-                        type: "bar",
-                        backgroundColor:"rgb(255,90,132)",
-                        borderColor:"rgb(255,99,132)",
-                        data:j
-                    }
-                ]
-            }
-            const config = {
-                type:"line",
-                data:data,
-                options:{}
-            }
-            const chart = new Chart(document.getElementById("chart"),config)
-        })
-    })
-    fetch("/Stat/StartupData").then(res=>{
-        res.json().then(j=>{
-            const data = {
-                datasets:[
-                    {
-                        label:"startup monthly",
-                        backgroundColor:"rgb(255,90,132)",
-                        borderColor:"rgb(255,99,132)",
-                        data:j
-                    }
-                ]
-            }
-            const config = {
-                type:"line",
-                data:data,
-                options:{}
-            }
-            const chart = new Chart(document.getElementById("chart2"),config)
-        })
-    })
+    function renderChart(canvasId, chartType, label, series, options = {}, datasetOverrides = {}) {
+        const data = {
+            datasets: [
+                {
+                    label: label,
+                    backgroundColor: "rgb(255,90,132)",
+                    borderColor: "rgb(255,99,132)",
+                    data: series,
+                    ...datasetOverrides
+                }
+            ]
+        };
+        const config = {
+            type: chartType,
+            data: data,
+            options: options
+        };
+        new Chart(document.getElementById(canvasId), config);
+    }
+
+    fetch("/Stat/UsageData").then(res => {
+        res.json().then(j => {
+            renderChart("chart", "line", "function usage", j, {}, { type: "bar" });
+        });
+    });
+
+    fetch("/Stat/StartupData").then(res => {
+        res.json().then(j => {
+            renderChart("chart2", "line", "startup monthly", j);
+        });
+    });
+
+    fetch("/Stat/DailyActiveUsersWeeklyAverage").then(res => {
+        res.json().then(j => {
+            renderChart("chart3", "line", "daily active users weekly average", j);
+        });
+    });
+
+    fetch("/Stat/DailyActiveUsersWeekdayAverage").then(res => {
+        res.json().then(j => {
+            renderChart("chart4", "bar", "daily active users weekday average", j, { scales: { y: { beginAtZero: true } } });
+        });
+    });
 </script>
