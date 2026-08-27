@@ -365,3 +365,6 @@ FodyWeavers.xsd
 
 # Rider .idea
 .idea/
+
+# APKs are deployed to a persistent mount rather than stored in Git.
+/ThuInfoWeb/wwwroot/apk/*.apk

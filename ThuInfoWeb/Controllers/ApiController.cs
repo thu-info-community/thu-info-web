@@ -97,14 +97,14 @@ public class ApiController(Data data, VersionManager versionManager, FeedbackNot
     }
 
     /// <summary>
-    ///     Redirect to the url ok APK.
+    ///     Redirect to the latest hosted APK.
     /// </summary>
     /// <returns></returns>
     [Route("Apk")]
-    public async Task<IActionResult> Apk()
+    public IActionResult Apk()
     {
-        // when start for the first time, if the apkurl is null or empty, this will generate an exception, so set an apkurl value as soon as possible.
-        return Redirect((await data.GetMiscAsync())?.ApkUrl ?? "");
+        var downloadUrl = versionManager.GetCurrentVersion(VersionManager.OS.Android).DownloadUrl;
+        return string.IsNullOrWhiteSpace(downloadUrl) ? NotFound() : Redirect(downloadUrl);
     }
 
     [Route("Socket")]

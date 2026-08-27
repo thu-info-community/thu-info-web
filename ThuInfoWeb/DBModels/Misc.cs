@@ -17,7 +17,7 @@ public class Misc
     public string QrCodeContent { get; init; } = string.Empty;
 
     /// <summary>
-    ///     The url of Apk.
+    ///     Legacy APK URL retained for database compatibility.
     /// </summary>
     [Column(StringLength = -1, IsNullable = false)]
     public string ApkUrl { get; init; } = string.Empty;

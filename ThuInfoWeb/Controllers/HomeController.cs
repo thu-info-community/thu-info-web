@@ -258,7 +258,6 @@ public class HomeController(ILogger<HomeController> logger, Data data, UserManag
         var misc = await data.GetMiscAsync() ?? new Misc();
         return View(new MiscViewModel
         {
-            ApkUrl = misc.ApkUrl,
             QrCodeContent = misc.QrCodeContent,
             CardIVersion = misc.CardIVersion,
             SchoolCalendarYear = misc.SchoolCalendarYear
@@ -271,9 +270,11 @@ public class HomeController(ILogger<HomeController> logger, Data data, UserManag
     {
         if (!ModelState.IsValid)
             return View(vm);
+        var existingMisc = await data.GetMiscAsync() ?? new Misc();
         var misc = new Misc
         {
-            ApkUrl = vm.ApkUrl ?? "",
+            // Keep the legacy value until its database column can be removed in a dedicated migration.
+            ApkUrl = existingMisc.ApkUrl,
             QrCodeContent = vm.QrCodeContent ?? "",
             CardIVersion = vm.CardIVersion,
             SchoolCalendarYear = vm.SchoolCalendarYear

@@ -9,10 +9,6 @@ public class MiscViewModel
     public string? QrCodeContent { get; init; }
 
     [Required]
-    [Url]
-    public string? ApkUrl { get; init; }
-
-    [Required]
     public int CardIVersion { get; init; }
 
     [Required]

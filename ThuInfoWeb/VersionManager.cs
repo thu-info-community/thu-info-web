@@ -5,8 +5,14 @@ using Version = ThuInfoWeb.DBModels.Version;
 
 namespace ThuInfoWeb;
 
-public class VersionManager(ILogger<VersionManager> logger, Data data, IConfiguration configuration)
+public class VersionManager(
+    ILogger<VersionManager> logger,
+    Data data,
+    IConfiguration configuration,
+    IWebHostEnvironment environment)
 {
+    private const string ApkPublicBaseUrl = "https://app.cs.tsinghua.edu.cn/apk/";
+
     public enum OS
     {
         Android,
@@ -51,7 +57,9 @@ public class VersionManager(ILogger<VersionManager> logger, Data data, IConfigur
             OS.Android => new VersionDto
             {
                 CreatedTime = _currentVersionOfAndroid.CreatedTime,
-                DownloadUrl = "https://app.cs.tsinghua.edu.cn/api/apk",
+                DownloadUrl = string.IsNullOrWhiteSpace(_currentVersionOfAndroid.VersionName)
+                    ? string.Empty
+                    : GetAndroidApkUrl(_currentVersionOfAndroid.VersionName),
                 ReleaseNote = _currentVersionOfAndroid.ReleaseNote,
                 VersionName = _currentVersionOfAndroid.VersionName
             },
@@ -93,13 +101,15 @@ public class VersionManager(ILogger<VersionManager> logger, Data data, IConfigur
                                                   + " check update for Android ok", version.VersionName);
                         }
                     }
-
-                    if (await data.CreateVersionAsync(version) != 1)
-                        throw new Exception("Unknown Error");
-                    if (logger.IsEnabled(LogLevel.Information))
+                    else if (AndroidApkExists(version.VersionName))
                     {
-                        logger.LogInformation("Found new version for Android: {VersionName}, check update ok",
-                            version.VersionName);
+                        if (await data.CreateVersionAsync(version) != 1)
+                            throw new Exception("Unknown Error");
+                        if (logger.IsEnabled(LogLevel.Information))
+                        {
+                            logger.LogInformation("Found new version for Android: {VersionName}, check update ok",
+                                version.VersionName);
+                        }
                     }
                 }
                 else
@@ -129,7 +139,7 @@ public class VersionManager(ILogger<VersionManager> logger, Data data, IConfigur
                     const string url = "https://api.github.com/repos/thu-info-community/thu-info-app/releases/latest";
                     var content = await _client.GetStringAsync(url);
                     var json = JsonNode.Parse(content)!;
-                    var versionName = (string)json["name"]!;
+                    var versionName = (string)json["tag_name"]!;
                     if (versionName == _currentVersionOfAndroid.VersionName)
                     {
                         if (logger.IsEnabled(LogLevel.Information))
@@ -139,7 +149,7 @@ public class VersionManager(ILogger<VersionManager> logger, Data data, IConfigur
                                 versionName);
                         }
                     }
-                    else
+                    else if (AndroidApkExists(versionName))
                     {
                         var publishedAt = DateTime.Parse((string)json["published_at"]!).ToLocalTime();
                         var releaseNote = (string)json["body"]!;
@@ -212,5 +222,34 @@ public class VersionManager(ILogger<VersionManager> logger, Data data, IConfigur
                 _currentVersionOfIOS = version;
             IsRunning = false;
         }
+    }
+
+    private bool AndroidApkExists(string versionName)
+    {
+        var apkPath = Path.Combine(environment.WebRootPath, "apk", GetAndroidApkFileName(versionName));
+        if (File.Exists(apkPath))
+            return true;
+
+        logger.LogWarning(
+            "APK for Android version {VersionName} was not found at {ApkPath}; the version will not be saved",
+            versionName, apkPath);
+        return false;
+    }
+
+    private static string GetAndroidApkUrl(string versionName)
+    {
+        return ApkPublicBaseUrl + Uri.EscapeDataString(GetAndroidApkFileName(versionName));
+    }
+
+    private static string GetAndroidApkFileName(string versionName)
+    {
+        var trimmedVersion = versionName.Trim();
+        var versionNumber = trimmedVersion.StartsWith('v') || trimmedVersion.StartsWith('V')
+            ? trimmedVersion[1..]
+            : trimmedVersion;
+        if (!versionNumber.IsValidVersionNumber())
+            throw new ArgumentException("Invalid Android version number format.", nameof(versionName));
+
+        return $"THUInfo_release_v{versionNumber}.apk";
     }
 }

@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.StaticFiles;
 using NLog;
 using NLog.Web;
 using ThuInfoWeb;
@@ -39,7 +40,12 @@ if (!app.Environment.IsDevelopment())
 
 // if (!app.Environment.IsDevelopment())
 //     app.UseHttpsRedirection();
-app.UseStaticFiles();
+var staticFileContentTypeProvider = new FileExtensionContentTypeProvider();
+staticFileContentTypeProvider.Mappings[".apk"] = "application/vnd.android.package-archive";
+app.UseStaticFiles(new StaticFileOptions
+{
+    ContentTypeProvider = staticFileContentTypeProvider
+});
 app.UseRouting();
 app.UseHttpLoggingMiddleware(); // log http requests to database
 app.UseAuthentication();

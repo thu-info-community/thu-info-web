@@ -11,12 +11,6 @@
     </li>
     <li class="list-group-item d-flex justify-content-between align-items-start">
         <div class="ms-2 me-auto">
-            <div class="fw-bold">安卓APK下载地址</div>
-            @Model.ApkUrl
-        </div>
-    </li>
-    <li class="list-group-item d-flex justify-content-between align-items-start">
-        <div class="ms-2 me-auto">
             <div class="fw-bold">校园卡接口版本</div>
             @Model.CardIVersion
         </div>
@@ -35,11 +29,6 @@
         <label class="form-label">加群二维码内容(url)</label>
         <input asp-for="QrCodeContent" class="form-control" value="@Model.QrCodeContent">
         <span asp-validation-for="QrCodeContent" class="text-danger"></span>
-    </div>
-    <div class="mb-3">
-        <label class="form-label">安卓APK下载地址</label>
-        <input asp-for="ApkUrl" class="form-control" value="@Model.ApkUrl">
-        <span asp-validation-for="ApkUrl" class="text-danger"></span>
     </div>
     <div class="mb-3">
         <label class="form-label">校园卡接口版本</label>
