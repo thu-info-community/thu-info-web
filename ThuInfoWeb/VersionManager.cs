@@ -1,17 +1,27 @@
-﻿using System.Text.Json;
-using System.Text.Json.Nodes;
+using System.Net.Http.Json;
+using System.Text.Json;
+using System.Text.Json.Serialization;
+using Microsoft.Extensions.Hosting;
 using ThuInfoWeb.Dtos;
 using Version = ThuInfoWeb.DBModels.Version;
 
 namespace ThuInfoWeb;
 
-public class VersionManager(
+public sealed class VersionManager(
     ILogger<VersionManager> logger,
     Data data,
     IConfiguration configuration,
-    IWebHostEnvironment environment)
+    IWebHostEnvironment environment,
+    IHttpClientFactory httpClientFactory) : IHostedService
 {
     private const string ApkPublicBaseUrl = "https://app.cs.tsinghua.edu.cn/apk/";
+    private const string InternalAndroidVersionUrl = "https://stu.cs.tsinghua.edu.cn/thuinfo/version/android";
+    private const string InternalIosVersionUrl = "https://stu.cs.tsinghua.edu.cn/thuinfo/version/ios";
+    private const string GithubLatestReleaseUrl =
+        "https://api.github.com/repos/thu-info-community/thu-info-app/releases/latest";
+    private const string AppStoreLookupUrl = "https://itunes.apple.com/lookup?id=1533968428";
+
+    private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
 
     public enum OS
     {
@@ -19,237 +29,241 @@ public class VersionManager(
         IOS
     }
 
-    private readonly HttpClient _client = new Func<HttpClient>(() =>
-    {
-        var client = new HttpClient();
-        client.DefaultRequestHeaders.Add("user-agent", "aspnetcore/6.0");
-        return client;
-    })();
-
-    private readonly bool _internalNetworkMode = bool.Parse(configuration["InternalNetworkMode"] ?? "false");
-    private readonly Lock _lock = new();
-    private Version _currentVersionOfAndroid = data.GetVersionAsync(true).Result ?? new Version();
-    private Version _currentVersionOfIOS = data.GetVersionAsync(false).Result ?? new Version();
+    private readonly ILogger<VersionManager> _logger = logger;
+    private readonly Data _data = data;
+    private readonly IWebHostEnvironment _environment = environment;
+    private readonly HttpClient _client = httpClientFactory.CreateClient("version-manager");
+    private readonly bool _internalNetworkMode = configuration.GetValue("InternalNetworkMode", false);
+    private readonly Lock _stateLock = new();
+    private Version _currentVersionOfAndroid = new();
+    private Version _currentVersionOfIos = new();
     private bool _isRunning;
 
     public bool IsRunning
     {
         get
         {
-            lock (_lock)
-            {
+            lock (_stateLock)
                 return _isRunning;
-            }
-        }
-        private set
-        {
-            lock (_lock)
-            {
-                _isRunning = value;
-            }
         }
     }
 
+    public async Task StartAsync(CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        try
+        {
+            var versions = await Task.WhenAll(
+                _data.GetVersionAsync(true),
+                _data.GetVersionAsync(false));
+
+            cancellationToken.ThrowIfCancellationRequested();
+
+            lock (_stateLock)
+            {
+                _currentVersionOfAndroid = versions[0] ?? new Version();
+                _currentVersionOfIos = versions[1] ?? new Version();
+            }
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            throw;
+        }
+        catch (Exception ex)
+        {
+            ApplicationLog.VersionCacheInitializationFailed(_logger, ex);
+        }
+    }
+
+    public Task StopAsync(CancellationToken cancellationToken) => Task.CompletedTask;
+
     public VersionDto GetCurrentVersion(OS os)
     {
+        Version version;
+        lock (_stateLock)
+            version = os == OS.Android ? _currentVersionOfAndroid : _currentVersionOfIos;
+
         return os switch
         {
             OS.Android => new VersionDto
             {
-                CreatedTime = _currentVersionOfAndroid.CreatedTime,
-                DownloadUrl = string.IsNullOrWhiteSpace(_currentVersionOfAndroid.VersionName)
-                    ? string.Empty
-                    : GetAndroidApkUrl(_currentVersionOfAndroid.VersionName),
-                ReleaseNote = _currentVersionOfAndroid.ReleaseNote,
-                VersionName = _currentVersionOfAndroid.VersionName
+                CreatedTime = version.CreatedTime,
+                DownloadUrl = GetAndroidApkUrl(version.VersionName),
+                ReleaseNote = version.ReleaseNote,
+                VersionName = version.VersionName
             },
             OS.IOS => new VersionDto
             {
-                CreatedTime = _currentVersionOfIOS.CreatedTime,
+                CreatedTime = version.CreatedTime,
                 DownloadUrl = "https://apps.apple.com/cn/app/thu-info/id1533968428",
-                ReleaseNote = _currentVersionOfIOS.ReleaseNote,
-                VersionName = _currentVersionOfIOS.VersionName
+                ReleaseNote = version.ReleaseNote,
+                VersionName = version.VersionName
             },
             _ => throw new ArgumentOutOfRangeException(nameof(os), os, null)
         };
     }
 
-    public async Task CheckUpdateAsync(OS os)
+    public async Task CheckUpdateAsync(OS os, CancellationToken cancellationToken = default)
     {
-        IsRunning = true;
-        if (logger.IsEnabled(LogLevel.Information))
+        lock (_stateLock)
         {
-            logger.LogInformation("Start checking update for {OS}, current version is {Version}",
-                os == OS.Android ? "Android" : "iOS",
-                os == OS.Android ? _currentVersionOfAndroid.VersionName : _currentVersionOfIOS.VersionName);
+            if (_isRunning)
+                return;
+            _isRunning = true;
         }
 
+        var osName = os == OS.Android ? "Android" : "iOS";
         try
         {
-            if (_internalNetworkMode)
-            {
-                if (os == OS.Android)
-                {
-                    var content = await _client.GetStringAsync(
-                        "https://stu.cs.tsinghua.edu.cn/thuinfo/version/android");
-                    var version = JsonSerializer.Deserialize<Version>(content)!;
-                    if (version.VersionName == _currentVersionOfAndroid.VersionName)
-                    {
-                        if (logger.IsEnabled(LogLevel.Information))
-                        {
-                            logger.LogInformation("No newer version is available for Android (current version is {VersionName}),"
-                                                  + " check update for Android ok", version.VersionName);
-                        }
-                    }
-                    else if (AndroidApkExists(version.VersionName))
-                    {
-                        if (await data.CreateVersionAsync(version) != 1)
-                            throw new Exception("Unknown Error");
-                        if (logger.IsEnabled(LogLevel.Information))
-                        {
-                            logger.LogInformation("Found new version for Android: {VersionName}, check update ok",
-                                version.VersionName);
-                        }
-                    }
-                }
-                else
-                {
-                    var content = await _client.GetStringAsync("https://stu.cs.tsinghua.edu.cn/thuinfo/version/ios");
-                    var version = JsonSerializer.Deserialize<Version>(content)!;
-                    if (version.VersionName == _currentVersionOfIOS.VersionName)
-                    {
-                        if (logger.IsEnabled(LogLevel.Information))
-                        {
-                            logger.LogInformation("No newer version is available for iOS(current version is {VersionName}), check update for iOS ok", version.VersionName);
-                        }
-                    }
+            var current = GetCurrentVersion(os);
+            ApplicationLog.VersionCheckStarted(_logger, osName, current.VersionName);
 
-                    if (await data.CreateVersionAsync(version) != 1)
-                        throw new Exception("Unknown Error");
-                    if (logger.IsEnabled(LogLevel.Information))
-                    {
-                        logger.LogInformation("Found new version for iOS: {VersionName}, check update for iOS ok", version.VersionName);
-                    }
-                }
-            }
-            else
+            var version = _internalNetworkMode
+                ? await GetInternalVersionAsync(os, cancellationToken)
+                : await GetPublicVersionAsync(os, cancellationToken);
+
+            if (version is null || !IsNewerVersion(version.VersionName, current.VersionName))
             {
-                if (os == OS.Android)
-                {
-                    const string url = "https://api.github.com/repos/thu-info-community/thu-info-app/releases/latest";
-                    var content = await _client.GetStringAsync(url);
-                    var json = JsonNode.Parse(content)!;
-                    var versionName = (string)json["tag_name"]!;
-                    if (versionName == _currentVersionOfAndroid.VersionName)
-                    {
-                        if (logger.IsEnabled(LogLevel.Information))
-                        {
-                            logger.LogInformation(
-                                "No newer version is available for Android(current version is {VersionName}), check update for Android ok",
-                                versionName);
-                        }
-                    }
-                    else if (AndroidApkExists(versionName))
-                    {
-                        var publishedAt = DateTime.Parse((string)json["published_at"]!).ToLocalTime();
-                        var releaseNote = (string)json["body"]!;
-                        var version = new Version
-                        {
-                            CreatedTime = publishedAt,
-                            IsAndroid = true,
-                            ReleaseNote = releaseNote,
-                            VersionName = versionName
-                        };
-                        var result = await data.CreateVersionAsync(version);
-                        if (result != 1)
-                            throw new Exception("Unknown Error");
-                        if (logger.IsEnabled(LogLevel.Information))
-                        {
-                            logger.LogInformation("Found new version for Android: {VersionName}, check update ok", versionName);
-                        }
-                    }
-                }
-                else // handle ios
-                {
-                    const string url = "https://itunes.apple.com/lookup?id=1533968428";
-                    var content = await _client.GetStringAsync(url);
-                    var json = JsonNode.Parse(content)!["results"]!.AsArray()[0]!;
-                    var versionName = (string)json["version"]!;
-                    if (versionName == _currentVersionOfIOS.VersionName)
-                    {
-                        if (logger.IsEnabled(LogLevel.Information))
-                        {
-                            logger.LogInformation(
-                                "No newer version is available for iOS(current version is {VersionName}), check update for iOS ok",
-                                versionName);
-                        }
-                    }
-                    else
-                    {
-                        var publishedAt = DateTime.Parse((string)json["currentVersionReleaseDate"]!).ToLocalTime();
-                        var releaseNote = (string)json["releaseNotes"]!;
-                        var version = new Version
-                        {
-                            CreatedTime = publishedAt,
-                            IsAndroid = false,
-                            ReleaseNote = releaseNote,
-                            VersionName = versionName
-                        };
-                        var result = await data.CreateVersionAsync(version);
-                        if (result != 1)
-                            throw new Exception("Unknown Error");
-                        if (logger.IsEnabled(LogLevel.Information))
-                        {
-                            logger.LogInformation("Found new version for iOS: {VersionName}, check update for iOS ok", versionName);
-                        }
-                    }
-                }
+                ApplicationLog.NoNewerVersion(_logger, osName);
+                return;
             }
+
+            if (os == OS.Android && !AndroidApkExists(version.VersionName))
+                return;
+
+            if (await _data.CreateVersionAsync(version) != 1)
+                throw new InvalidOperationException("The new application version could not be saved.");
+
+            ApplicationLog.VersionFound(_logger, osName, version.VersionName);
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            ApplicationLog.VersionCheckCanceled(_logger, osName);
         }
         catch (Exception ex)
         {
-            if (logger.IsEnabled(LogLevel.Error))
-            {
-                logger.LogError(ex, "Checking update for {OS} failed", os);
-            }
+            ApplicationLog.VersionCheckFailed(_logger, ex, osName);
         }
         finally
         {
-            var version = await data.GetVersionAsync(os == OS.Android) ?? new Version();
-            if (os == OS.Android)
-                _currentVersionOfAndroid = version;
-            else
-                _currentVersionOfIOS = version;
-            IsRunning = false;
+            try
+            {
+                var version = await _data.GetVersionAsync(os == OS.Android);
+                if (version is not null)
+                {
+                    lock (_stateLock)
+                    {
+                        if (os == OS.Android)
+                            _currentVersionOfAndroid = version;
+                        else
+                            _currentVersionOfIos = version;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                ApplicationLog.VersionCacheRefreshFailed(_logger, ex, osName);
+            }
+
+            lock (_stateLock)
+                _isRunning = false;
         }
+    }
+
+    private async Task<Version?> GetInternalVersionAsync(OS os, CancellationToken cancellationToken)
+    {
+        var url = os == OS.Android ? InternalAndroidVersionUrl : InternalIosVersionUrl;
+        return await _client.GetFromJsonAsync<Version>(url, JsonOptions, cancellationToken);
+    }
+
+    private async Task<Version?> GetPublicVersionAsync(OS os, CancellationToken cancellationToken)
+    {
+        if (os == OS.Android)
+        {
+            var release = await _client.GetFromJsonAsync<GithubRelease>(GithubLatestReleaseUrl, JsonOptions,
+                cancellationToken);
+            if (release?.TagName is null || release.PublishedAt is null)
+                return null;
+
+            return new Version
+            {
+                CreatedTime = release.PublishedAt.Value.LocalDateTime,
+                IsAndroid = true,
+                ReleaseNote = release.Body ?? string.Empty,
+                VersionName = release.TagName
+            };
+        }
+
+        var lookup = await _client.GetFromJsonAsync<AppStoreLookup>(AppStoreLookupUrl, JsonOptions,
+            cancellationToken);
+        var result = lookup?.Results?.FirstOrDefault();
+        if (result?.Version is null || result.CurrentVersionReleaseDate is null)
+            return null;
+
+        return new Version
+        {
+            CreatedTime = result.CurrentVersionReleaseDate.Value.LocalDateTime,
+            IsAndroid = false,
+            ReleaseNote = result.ReleaseNotes ?? string.Empty,
+            VersionName = result.Version
+        };
     }
 
     private bool AndroidApkExists(string versionName)
     {
-        var apkPath = Path.Combine(environment.WebRootPath, "apk", GetAndroidApkFileName(versionName));
+        var apkPath = Path.Combine(_environment.WebRootPath, "apk", GetAndroidApkFileName(versionName));
         if (File.Exists(apkPath))
             return true;
 
-        logger.LogWarning(
-            "APK for Android version {VersionName} was not found at {ApkPath}; the version will not be saved",
-            versionName, apkPath);
+        ApplicationLog.AndroidApkMissing(_logger, versionName, apkPath);
         return false;
+    }
+
+    private static bool IsNewerVersion(string? candidate, string? current)
+    {
+        var candidateNumber = NormalizeVersion(candidate);
+        if (!candidateNumber.IsValidVersionNumber())
+            return false;
+
+        var currentNumber = NormalizeVersion(current);
+        return string.IsNullOrEmpty(currentNumber)
+               || !currentNumber.IsValidVersionNumber()
+               || candidateNumber.VersionGreaterThan(currentNumber);
+    }
+
+    private static string NormalizeVersion(string? version)
+    {
+        var trimmed = version?.Trim() ?? string.Empty;
+        return trimmed.Length > 0 && (trimmed[0] == 'v' || trimmed[0] == 'V') ? trimmed[1..] : trimmed;
     }
 
     private static string GetAndroidApkUrl(string versionName)
     {
-        return ApkPublicBaseUrl + Uri.EscapeDataString(GetAndroidApkFileName(versionName));
+        var versionNumber = NormalizeVersion(versionName);
+        return !versionNumber.IsValidVersionNumber()
+            ? string.Empty
+            : ApkPublicBaseUrl + Uri.EscapeDataString($"THUInfo_release_v{versionNumber}.apk");
     }
 
     private static string GetAndroidApkFileName(string versionName)
     {
-        var trimmedVersion = versionName.Trim();
-        var versionNumber = trimmedVersion.StartsWith('v') || trimmedVersion.StartsWith('V')
-            ? trimmedVersion[1..]
-            : trimmedVersion;
+        var versionNumber = NormalizeVersion(versionName);
         if (!versionNumber.IsValidVersionNumber())
             throw new ArgumentException("Invalid Android version number format.", nameof(versionName));
 
         return $"THUInfo_release_v{versionNumber}.apk";
     }
+
+    private sealed record GithubRelease(
+        [property: JsonPropertyName("tag_name")] string? TagName,
+        [property: JsonPropertyName("published_at")] DateTimeOffset? PublishedAt,
+        [property: JsonPropertyName("body")] string? Body);
+
+    private sealed record AppStoreLookup(
+        [property: JsonPropertyName("results")] AppStoreResult[]? Results);
+
+    private sealed record AppStoreResult(
+        [property: JsonPropertyName("version")] string? Version,
+        [property: JsonPropertyName("currentVersionReleaseDate")] DateTimeOffset? CurrentVersionReleaseDate,
+        [property: JsonPropertyName("releaseNotes")] string? ReleaseNotes);
 }

@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using ThuInfoWeb.Bots;
 using ThuInfoWeb.DBModels;
 using ThuInfoWeb.Dtos;
 
@@ -10,9 +9,14 @@ namespace ThuInfoWeb.Controllers;
 /// </summary>
 [Route("[controller]")]
 [ApiController]
-public class ApiController(Data data, VersionManager versionManager, FeedbackNoticeBot feedbackNoticeBot)
+public class ApiController(
+    Data data,
+    VersionManager versionManager,
+    FeedbackNoticeDispatcher feedbackNoticeDispatcher,
+    TimeProvider timeProvider)
     : ControllerBase
 {
+    private readonly TimeProvider _timeProvider = timeProvider;
     /// <summary>
     ///     Get announce, get the latest announce simply by no query string(just get /api/announce). If needed, you should only
     ///     enter id or page at one time.
@@ -57,8 +61,8 @@ public class ApiController(Data data, VersionManager versionManager, FeedbackNot
         {
             AppVersion = dto.AppVersion,
             Content = dto.Content,
-            CreatedTime = DateTime.Now,
-            OS = dto.OS.ToLower(),
+            CreatedTime = _timeProvider.GetLocalNow().DateTime,
+            OS = dto.OS.ToLowerInvariant(),
             Contact = dto.Contact,
             PhoneModel = dto.PhoneModel
         };
@@ -68,7 +72,7 @@ public class ApiController(Data data, VersionManager versionManager, FeedbackNot
             return BadRequest();
         }
 
-        _ = feedbackNoticeBot.PushNoticeAsync(
+        feedbackNoticeDispatcher.TryEnqueue(
             $"收到新反馈\n{dto.Content}\n请前往http://app.cs.tsinghua.edu.cn/Home/Feedback回复");
         return Created("Api/Feedback", null);
     }
@@ -146,9 +150,11 @@ public class ApiController(Data data, VersionManager versionManager, FeedbackNot
     [Route("Version/{os}")]
     public IActionResult Version([FromRoute] string os)
     {
-        return Ok(os.Equals("android", StringComparison.CurrentCultureIgnoreCase)
-            ? versionManager.GetCurrentVersion(VersionManager.OS.Android)
-            : versionManager.GetCurrentVersion(VersionManager.OS.IOS));
+        if (string.Equals(os, "android", StringComparison.OrdinalIgnoreCase))
+            return Ok(versionManager.GetCurrentVersion(VersionManager.OS.Android));
+        if (string.Equals(os, "ios", StringComparison.OrdinalIgnoreCase))
+            return Ok(versionManager.GetCurrentVersion(VersionManager.OS.IOS));
+        return BadRequest("Unsupported operating system.");
     }
 
     [Route("CardIVersion")]

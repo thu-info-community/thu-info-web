@@ -6,13 +6,13 @@ namespace ThuInfoWeb;
 
 public static partial class Extension
 {
-    [GeneratedRegex(@"^\d+\.\d+\.\d+$")]
+    [GeneratedRegex(@"^\d+\.\d+\.\d+$", RegexOptions.CultureInvariant)]
     private static partial Regex VersionRegex();
 
     public static string ToSHA256Hex(this string s)
     {
-        var data = SHA256.HashData(Encoding.ASCII.GetBytes(s));
-        return data.Aggregate("", (current, b) => current + b.ToString("x").PadLeft(2, '0'));
+        var data = SHA256.HashData(Encoding.UTF8.GetBytes(s));
+        return Convert.ToHexString(data).ToLowerInvariant();
     }
 
     public static bool IsValidVersionNumber(this string s)

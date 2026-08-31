@@ -2,19 +2,19 @@
 The web server application of [THUInfo](https://github.com/thu-info-community/thu-info-app)
 # Build Instruction
 ## Step 1
-Install dotnet sdk 8.0.
+Install the .NET 10 SDK. The repository pins SDK `10.0.400` in `global.json` and permits rolling forward within the .NET 10 feature band.
 If you are running RHEL or CentOS, just use
 ```
-$ sudo dnf install dotnet-sdk-8.0
+$ sudo dnf install dotnet-sdk-10.0
 ```
-Others should follow this [installation instruction](https://docs.microsoft.com/zh-cn/dotnet/core/install/linux)
+Others should follow this [installation instruction](https://learn.microsoft.com/en-us/dotnet/core/install/linux)
 ## Step 2
 Clone this repo, and cd into folder ThuInfoWeb which contains the file ThuInfoWeb.csproj.
 Then, run
 ```
 dotnet build
 ```
-and everything will be done by the .net sdk cli.
+and everything will be done by the .NET SDK CLI. Run `dotnet test` from the repository root to execute the test suite.
 ## Step 3
 Set up configuration.
 Open appsettings.json, input your postgresql connection string into "Test" node.

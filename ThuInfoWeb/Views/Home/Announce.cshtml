@@ -4,6 +4,7 @@
 }
 <div class="container">
     <form method="post" id="form1">
+        @Html.AntiForgeryToken()
         <h3>
             发布公告
         </h3>
@@ -64,8 +65,12 @@
                 <td class="text-center">@item.CreatedTime</td>
                 <td class="text-center">@item.IsActive</td>
                 <td class="text-center">
-                    <a class="btn btn-link" asp-action="DeleteAnnounce" asp-route-id="@item.Id" asp-route-returnpage="@ViewData["page"]">删除</a>
-                    <a class="btn btn-link" asp-action="ChangeAnnounceStatus" asp-route-id="@item.Id" asp-route-returnpage="@ViewData["page"]">更改状态</a>
+                    <form asp-action="DeleteAnnounce" asp-route-id="@item.Id" asp-route-returnpage="@ViewData["page"]" method="post" class="d-inline">
+                        <button type="submit" class="btn btn-link">删除</button>
+                    </form>
+                    <form asp-action="ChangeAnnounceStatus" asp-route-id="@item.Id" asp-route-returnpage="@ViewData["page"]" method="post" class="d-inline">
+                        <button type="submit" class="btn btn-link">更改状态</button>
+                    </form>
                 </td>
             </tr>
         }

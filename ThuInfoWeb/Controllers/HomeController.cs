@@ -1,16 +1,28 @@
 ﻿using System.Diagnostics;
+using System.Security.Cryptography;
+using System.Text;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using ThuInfoWeb.DBModels;
 using ThuInfoWeb.Models;
 
 namespace ThuInfoWeb.Controllers;
 
-public class HomeController(ILogger<HomeController> logger, Data data, UserManager userManager,
-    VersionManager versionManager, LoginAttemptService loginAttemptService)
+[AutoValidateAntiforgeryToken]
+public class HomeController(
+    ILogger<HomeController> logger,
+    Data data,
+    UserManager userManager,
+    VersionManager versionManager,
+    LoginAttemptService loginAttemptService,
+    IPasswordHasher<User> passwordHasher,
+    TimeProvider timeProvider)
     : Controller
 {
     private readonly ILogger<HomeController> _logger = logger;
+    private readonly IPasswordHasher<User> _passwordHasher = passwordHasher;
+    private readonly TimeProvider _timeProvider = timeProvider;
 
     public IActionResult Register()
     {
@@ -26,30 +38,6 @@ public class HomeController(ILogger<HomeController> logger, Data data, UserManag
         // Prohibit registration
         ModelState.AddModelError(nameof(vm.Name), "禁止注册新用户");
         return View(vm);
-
-        // if (await _data.CheckUserAsync(vm.Name))
-        // {
-        //     ModelState.AddModelError(nameof(vm.Name), "用户名已被注册");
-        //     return View(vm);
-        // }
-        // var user = new User()
-        // {
-        //     Name = vm.Name,
-        //     PasswordHash = vm.Password.ToSHA256Hex(),
-        //     CreatedTime = DateTime.Now,
-        //     IsAdmin = false
-        // };
-        // var result = await _data.CreateUserAsync(user);
-        // if (result == 1)
-        // {
-        //     await _userManager.DoLoginAsync(vm.Name, false);
-        //     return RedirectToAction("Index");
-        // }
-        // else
-        // {
-        //     ModelState.AddModelError(nameof(vm.Name), "发生未知错误");
-        //     return View(vm);
-        // }
     }
 
     public IActionResult Login()
@@ -69,7 +57,7 @@ public class HomeController(ILogger<HomeController> logger, Data data, UserManag
         }
         // get the user and check if the password is correct
         var user = vm.Name != null ? await data.GetUserAsync(vm.Name) : null;
-        if (user is null || vm.Password?.ToSHA256Hex() != user.PasswordHash)
+        if (user is null || !VerifyPassword(user, vm.Password!, out var shouldRehash))
         {
             ModelState.AddModelError(nameof(vm.Name), "用户名或密码错误");
             ModelState.AddModelError(nameof(vm.Password), "用户名或密码错误");
@@ -77,10 +65,21 @@ public class HomeController(ILogger<HomeController> logger, Data data, UserManag
             return View(vm);
         }
 
+        if (shouldRehash)
+        {
+            var rehashResult = await data.ChangeUserPasswordAsync(
+                user.Name,
+                _passwordHasher.HashPassword(user, vm.Password!));
+            if (rehashResult != 1)
+                ApplicationLog.PasswordHashMigrationFailed(_logger, user.Name);
+        }
+
+        loginAttemptService.ClearAttempts(user.Name);
         await userManager.DoLoginAsync(user.Name, user.IsAdmin);
         return RedirectToAction("Index");
     }
 
+    [HttpPost]
     [Authorize(Roles = "admin,guest")]
     public async Task<IActionResult> Logout()
     {
@@ -101,14 +100,16 @@ public class HomeController(ILogger<HomeController> logger, Data data, UserManag
         if (!ModelState.IsValid)
             return View(vm);
         if (HttpContext.User.Identity!.Name != vm.Name)
-            BadRequest();
-        if (vm.OldPassword?.ToSHA256Hex() != (await data.GetUserAsync(HttpContext.User.Identity!.Name!))!.PasswordHash)
+            return BadRequest();
+
+        var user = await data.GetUserAsync(HttpContext.User.Identity.Name!);
+        if (user is null || vm.OldPassword is null || !VerifyPassword(user, vm.OldPassword, out _))
         {
             ModelState.AddModelError(nameof(vm.OldPassword), "旧密码错误");
             return View(vm);
         }
 
-        var result = await data.ChangeUserPasswordAsync(HttpContext.User.Identity.Name!, vm.NewPassword!.ToSHA256Hex());
+        var result = await data.ChangeUserPasswordAsync(user.Name, _passwordHasher.HashPassword(user, vm.NewPassword!));
         if (result != 1)
         {
             ModelState.AddModelError(nameof(vm.NewPassword), "发生未知错误");
@@ -177,7 +178,7 @@ public class HomeController(ILogger<HomeController> logger, Data data, UserManag
             Title = vm.Title,
             Content = vm.Content,
             Author = user,
-            CreatedTime = DateTime.Now,
+            CreatedTime = _timeProvider.GetLocalNow().DateTime,
             IsActive = vm.IsActive,
             VisibleNotAfter = visibleNotAfter,
             VisibleExact = visibleExact
@@ -188,6 +189,7 @@ public class HomeController(ILogger<HomeController> logger, Data data, UserManag
         return CreatedAtAction(nameof(Announce), null);
     }
 
+    [HttpPost]
     [Authorize(Roles = "admin")]
     public async Task<IActionResult> ChangeAnnounceStatus([FromRoute] int id, [FromQuery] int returnpage)
     {
@@ -200,6 +202,7 @@ public class HomeController(ILogger<HomeController> logger, Data data, UserManag
         return RedirectToAction(nameof(Announce), new { page = returnpage == 0 ? 1 : returnpage });
     }
 
+    [HttpPost]
     [Authorize(Roles = "admin")]
     public async Task<IActionResult> DeleteAnnounce([FromRoute] int id, [FromQuery] int returnpage)
     {
@@ -230,6 +233,7 @@ public class HomeController(ILogger<HomeController> logger, Data data, UserManag
         return View(list);
     }
 
+    [HttpPost]
     [Authorize(Roles = "admin")]
     public async Task<IActionResult> DeleteFeedback([FromRoute] int id, [FromQuery] int returnpage = 1)
     {
@@ -309,7 +313,7 @@ public class HomeController(ILogger<HomeController> logger, Data data, UserManag
             Id = vm.Id!.Trim(),
             Building = vm.Building!.Trim(),
             Name = vm.Name!.Trim(),
-            CreatedTime = DateTime.Now
+            CreatedTime = _timeProvider.GetLocalNow().DateTime
         };
 
         try
@@ -350,14 +354,20 @@ public class HomeController(ILogger<HomeController> logger, Data data, UserManag
         return RedirectToAction(nameof(JieliWashers));
     }
 
+    [HttpPost]
     [Authorize(Roles = "admin")]
     [Route("Home/CheckUpdate/{os}")]
-    public IActionResult CheckUpdate([FromRoute] string os)
+    public async Task<IActionResult> CheckUpdate([FromRoute] string os)
     {
-        if (!versionManager.IsRunning)
-            _ = versionManager.CheckUpdateAsync(os.Equals("android", StringComparison.CurrentCultureIgnoreCase)
-                ? VersionManager.OS.Android
-                : VersionManager.OS.IOS);
+        var target = string.Equals(os, "android", StringComparison.OrdinalIgnoreCase)
+            ? VersionManager.OS.Android
+            : string.Equals(os, "ios", StringComparison.OrdinalIgnoreCase)
+                ? VersionManager.OS.IOS
+                : (VersionManager.OS?)null;
+        if (target is null)
+            return BadRequest("Unsupported operating system.");
+
+        await versionManager.CheckUpdateAsync(target.Value, HttpContext.RequestAborted);
         return RedirectToAction(nameof(Index));
     }
 
@@ -371,7 +381,31 @@ public class HomeController(ILogger<HomeController> logger, Data data, UserManag
     [Route("Home/Exception")]
     public IActionResult Exception()
     {
-        throw new Exception("Generated exception in DEBUG build");
+        throw new InvalidOperationException("Generated exception in DEBUG build");
     }
 #endif
+
+    private bool VerifyPassword(User user, string password, out bool shouldRehash)
+    {
+        shouldRehash = false;
+        if (IsLegacyHash(user.PasswordHash))
+        {
+            var expected = Encoding.UTF8.GetBytes(user.PasswordHash);
+            var actual = Encoding.UTF8.GetBytes(password.ToSHA256Hex());
+            if (expected.Length != actual.Length || !CryptographicOperations.FixedTimeEquals(actual, expected))
+                return false;
+
+            shouldRehash = true;
+            return true;
+        }
+
+        var result = _passwordHasher.VerifyHashedPassword(user, user.PasswordHash, password);
+        shouldRehash = result == PasswordVerificationResult.SuccessRehashNeeded;
+        return result != PasswordVerificationResult.Failed;
+    }
+
+    private static bool IsLegacyHash(string hash)
+    {
+        return hash.Length == 64 && hash.All(c => c is >= '0' and <= '9' or >= 'a' and <= 'f' or >= 'A' and <= 'F');
+    }
 }

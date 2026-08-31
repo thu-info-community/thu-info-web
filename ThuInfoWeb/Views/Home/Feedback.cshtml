@@ -35,7 +35,9 @@
                 <td>@item.RepliedTime</td>
                 <td>
                     <a class="btn btn-link" data-bs-toggle="modal" data-bs-target="#replymodal" onclick="startreply(@item.Id)">回复</a>
-                    <a class="btn btn-link" asp-action="DeleteFeedback" asp-route-id="@item.Id" asp-route-returnpage="@ViewData["page"]">删除</a>
+                    <form asp-action="DeleteFeedback" asp-route-id="@item.Id" asp-route-returnpage="@ViewData["page"]" method="post" class="d-inline">
+                        <button type="submit" class="btn btn-link">删除</button>
+                    </form>
                 </td>
             </tr>
         }
@@ -52,6 +54,7 @@
         <div class="modal-dialog">
             <div class="modal-content">
                 <form id="replyform">
+                    @Html.AntiForgeryToken()
                     <div class="modal-header">
                         <h5 class="modal-title" id="staticBackdropLabel">回复</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>

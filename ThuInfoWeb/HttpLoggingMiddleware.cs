@@ -1,35 +1,40 @@
-﻿using System.Net;
+using System.Buffers.Binary;
+using System.Net;
 using ThuInfoWeb.DBModels;
 
 namespace ThuInfoWeb;
 
-// You may need to install the Microsoft.AspNetCore.Http.Abstractions package into your project
-public class HttpLoggingMiddleware(RequestDelegate next)
+public sealed class HttpLoggingMiddleware(RequestDelegate next)
 {
     private readonly RequestDelegate _next = next;
 
-    public async Task Invoke(HttpContext context, Data data)
+    public async Task Invoke(HttpContext context, Data data, ILogger<HttpLoggingMiddleware> logger)
     {
-        var path = context.Request.Path;
-        if (!path.StartsWithSegments("/api"))
+        if (!context.Request.Path.StartsWithSegments("/api"))
         {
-            var ip = context.Connection.RemoteIpAddress ?? IPAddress.Parse("0.0.0.0");
-            var ipBytes = ip.GetAddressBytes().Reverse().ToArray();
+            var ip = (context.Connection.RemoteIpAddress ?? IPAddress.None).MapToIPv4();
             var r = new Request
             {
                 Method = context.Request.Method,
-                Path = path,
-                Ip = BitConverter.ToUInt32(ipBytes),
+                Path = context.Request.Path,
+                Ip = BinaryPrimitives.ReadUInt32BigEndian(ip.GetAddressBytes()),
                 Time = DateTime.Now
             };
-            await data.CreateHttpRequestLogAsync(r);
+
+            try
+            {
+                await data.CreateHttpRequestLogAsync(r);
+            }
+            catch (Exception ex)
+            {
+                ApplicationLog.HttpRequestLogPersistenceFailed(logger, ex, context.Request.Path);
+            }
         }
 
         await _next(context);
     }
 }
 
-// Extension method used to add the middleware to the HTTP request pipeline.
 public static class HttpLoggingMiddlewareExtensions
 {
     public static IApplicationBuilder UseHttpLoggingMiddleware(this IApplicationBuilder builder)

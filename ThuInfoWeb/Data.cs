@@ -1,13 +1,15 @@
-﻿using FreeSql;
+﻿using System.Globalization;
+using FreeSql;
 using FreeSql.Internal;
 using ThuInfoWeb.DBModels;
 using Version = ThuInfoWeb.DBModels.Version;
 
 namespace ThuInfoWeb;
 
-public class Data
+public sealed class Data : IDisposable
 {
     private readonly IFreeSql _fsql;
+    private readonly TimeProvider _timeProvider;
 
     /// <summary>
     /// </summary>
@@ -16,8 +18,9 @@ public class Data
     ///     if env is development, use local sqlite database instead of remote postgresql. The DB file
     ///     will be created automatically.
     /// </param>
-    public Data(string connectionString, bool isDevelopment)
+    public Data(string connectionString, bool isDevelopment, TimeProvider? timeProvider = null)
     {
+        _timeProvider = timeProvider ?? TimeProvider.System;
         if (isDevelopment)
             _fsql = new FreeSqlBuilder()
                 .UseConnectionString(DataType.Sqlite, "Data Source=test.db")
@@ -148,7 +151,9 @@ public class Data
     public async Task<int> ReplyFeedbackAsync(int id, string reply, string replier)
     {
         return await _fsql.Update<Feedback>().Where(x => x.Id == id).Set(x => x.Reply, reply)
-            .Set(x => x.ReplierName, replier).Set(x => x.RepliedTime, DateTime.Now).ExecuteAffrowsAsync();
+            .Set(x => x.ReplierName, replier)
+            .Set(x => x.RepliedTime, _timeProvider.GetLocalNow().DateTime)
+            .ExecuteAffrowsAsync();
     }
 
     public async Task<List<Socket>> GetSocketsAsync(int sectionId)
@@ -222,9 +227,19 @@ public class Data
 
     public async Task<Dictionary<string, int>> GetStartupDataAsync()
     {
-        return await _fsql.Select<Startup>().GroupBy(x => x.CreatedTime.ToString("yyyy MM"))
-            .OrderBy(x => x.Key)
-            .ToDictionaryAsync(x => x.Count());
+        var monthlyCounts = await _fsql.Select<Startup>()
+            .GroupBy(x => new { x.CreatedTime.Year, x.CreatedTime.Month })
+            .OrderBy(x => x.Key.Year)
+            .OrderBy(x => x.Key.Month)
+            .ToListAsync(x => new { x.Key.Year, x.Key.Month, Count = x.Count() });
+
+        return monthlyCounts
+            .ToDictionary(
+                x => string.Concat(
+                    x.Year.ToString("D4", CultureInfo.InvariantCulture),
+                    " ",
+                    x.Month.ToString("D2", CultureInfo.InvariantCulture)),
+                x => x.Count);
     }
 
     public async Task<Dictionary<string, double>> GetWeeklyAverageDailyActiveUsersAsync()
@@ -250,7 +265,7 @@ public class Data
         }
 
         return weeklyBuckets.ToDictionary(
-            x => x.Key.ToString("yyyy-MM-dd"),
+            x => x.Key.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
             x => Math.Round(x.Value.Average(), 2));
     }
 
@@ -307,17 +322,22 @@ public class Data
 #if DEBUG
     public async Task GenStartupDataAsync()
     {
-        var s1 = new Startup { CreatedTime = DateTime.Now - TimeSpan.FromDays(30) };
+        var s1 = new Startup { CreatedTime = _timeProvider.GetLocalNow().DateTime - TimeSpan.FromDays(30) };
         for (var i = 0; i < 10; i++)
             await _fsql.Insert(s1).ExecuteAffrowsAsync();
 
-        var s2 = new Startup { CreatedTime = DateTime.Now - TimeSpan.FromDays(60) };
+        var s2 = new Startup { CreatedTime = _timeProvider.GetLocalNow().DateTime - TimeSpan.FromDays(60) };
         for (var i = 0; i < 20; i++)
             await _fsql.Insert(s2).ExecuteAffrowsAsync();
 
-        var s3 = new Startup { CreatedTime = DateTime.Now - TimeSpan.FromDays(90) };
+        var s3 = new Startup { CreatedTime = _timeProvider.GetLocalNow().DateTime - TimeSpan.FromDays(90) };
         for (var i = 0; i < 30; i++)
             await _fsql.Insert(s3).ExecuteAffrowsAsync();
     }
 #endif
+
+    public void Dispose()
+    {
+        (_fsql as IDisposable)?.Dispose();
+    }
 }

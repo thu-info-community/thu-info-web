@@ -26,8 +26,12 @@
                     {
                         <p class="card-text">未运行</p>
                     }
-                    <a onclick="checkupdate(1)" href="javascript:void(0)" class="card-link">检查Android版本</a>
-                    <a onclick="checkupdate(2)" href="javascript:void(0)" class="card-link">检查iOS版本</a>
+                    <form id="check-android" asp-action="CheckUpdate" asp-route-os="Android" method="post" class="d-inline">
+                        <button type="button" onclick="checkupdate('check-android')" class="btn btn-link card-link">检查Android版本</button>
+                    </form>
+                    <form id="check-ios" asp-action="CheckUpdate" asp-route-os="iOS" method="post" class="d-inline">
+                        <button type="button" onclick="checkupdate('check-ios')" class="btn btn-link card-link">检查iOS版本</button>
+                    </form>
                 </div>
             </div>
             <div>
@@ -45,21 +49,19 @@
                 您无权访问管理功能
             </p>
         }
-        <a class="btn btn-primary" asp-action="Logout">退出</a>
+        <form asp-action="Logout" method="post" class="d-inline">
+            <button type="submit" class="btn btn-primary">退出</button>
+        </form>
     </div>
     <script>
         const checkisrunning = @(VersionManager.IsRunning ? "true" : "false");
-        function checkupdate(os){
+        function checkupdate(formId){
             if(checkisrunning) {
                 alert("版本检查运行中，请稍后刷新再试");
                 return;
             }
             if(!confirm("确定要开始检查新版本吗")) return;
-            if(os===1){
-                location.href = "/Home/CheckUpdate/Android";
-            }else{
-                location.href = "/Home/CheckUpdate/iOS";
-            }
+            document.getElementById(formId).submit();
         }
     </script>
 </div>

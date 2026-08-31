@@ -17,14 +17,19 @@ public class StartupRequest
 
 [Route("[controller]/[action]")]
 [ApiController]
-public class StatController(Data data) : ControllerBase
+public class StatController(Data data, TimeProvider timeProvider) : ControllerBase
 {
+    private readonly TimeProvider _timeProvider = timeProvider;
     [Route("{function:int}")]
     public async Task<IActionResult> Usage(int function)
     {
         if (!Enum.IsDefined(typeof(Usage.FunctionType), function))
             return BadRequest("功能不存在");
-        var usage = new Usage { Function = (Usage.FunctionType)function, CreatedTime = DateTime.Now };
+        var usage = new Usage
+        {
+            Function = (Usage.FunctionType)function,
+            CreatedTime = _timeProvider.GetLocalNow().DateTime
+        };
         var result = await data.CreateUsageAsync(usage);
         if (result != 1)
             return BadRequest();
@@ -40,7 +45,7 @@ public class StatController(Data data) : ControllerBase
         {
             Function = (Usage.FunctionType)request.Function,
             Uuid = request.Uuid,
-            CreatedTime = DateTime.Now
+            CreatedTime = _timeProvider.GetLocalNow().DateTime
         };
         var result = await data.CreateUsageAsync(usage);
         if (result != 1)
@@ -57,7 +62,7 @@ public class StatController(Data data) : ControllerBase
 
     public async Task<IActionResult> Startup()
     {
-        var s = new Startup { CreatedTime = DateTime.Now };
+        var s = new Startup { CreatedTime = _timeProvider.GetLocalNow().DateTime };
         var result = await data.CreateStartupAsync(s);
         if (result != 1)
             return BadRequest();
@@ -70,7 +75,7 @@ public class StatController(Data data) : ControllerBase
         var s = new Startup
         {
             Uuid = request.Uuid,
-            CreatedTime = DateTime.Now
+            CreatedTime = _timeProvider.GetLocalNow().DateTime
         };
         var result = await data.CreateStartupAsync(s);
         if (result != 1)
