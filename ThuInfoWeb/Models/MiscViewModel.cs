@@ -8,6 +8,8 @@ public class MiscViewModel
     [Url]
     public string? QrCodeContent { get; init; }
 
+    public string? DeepSeekModels { get; init; }
+
     [Required]
     public int CardIVersion { get; init; }
 

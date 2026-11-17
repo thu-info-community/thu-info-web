@@ -157,6 +157,12 @@ public class ApiController(
         return BadRequest("Unsupported operating system.");
     }
 
+    [HttpGet("DeepSeekModels")]
+    public async Task<IActionResult> DeepSeekModels()
+    {
+        return Ok(DeepSeekModelNames.Parse((await data.GetMiscAsync())?.DeepSeekModels));
+    }
+
     [Route("CardIVersion")]
     public async Task<IActionResult> CardIVersion()
     {

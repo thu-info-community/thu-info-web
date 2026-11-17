@@ -37,6 +37,7 @@ public sealed class Data : IDisposable
         // Check if there is a misc record in database, create one if not exist.
         if (!_fsql.Select<Misc>().Any())
             _fsql.Insert(new Misc()).ExecuteAffrows();
+        DeepSeekModelNames.Initialize(_fsql);
     }
 
     public async Task<Misc?> GetMiscAsync()

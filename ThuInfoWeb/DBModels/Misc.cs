@@ -23,6 +23,12 @@ public class Misc
     public string ApkUrl { get; init; } = string.Empty;
 
     /// <summary>
+    ///     Comma-separated campus assistant model names. Null marks an unmigrated row.
+    /// </summary>
+    [Column(StringLength = -1, IsNullable = true)]
+    public string? DeepSeekModels { get; init; } = DeepSeekModelNames.DefaultModel;
+
+    /// <summary>
     ///     The interface version of new school card.
     /// </summary>
     [Column(IsNullable = false)]

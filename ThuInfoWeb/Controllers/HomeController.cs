@@ -263,6 +263,7 @@ public class HomeController(
         return View(new MiscViewModel
         {
             QrCodeContent = misc.QrCodeContent,
+            DeepSeekModels = misc.DeepSeekModels,
             CardIVersion = misc.CardIVersion,
             SchoolCalendarYear = misc.SchoolCalendarYear
         });
@@ -280,6 +281,7 @@ public class HomeController(
             // Keep the legacy value until its database column can be removed in a dedicated migration.
             ApkUrl = existingMisc.ApkUrl,
             QrCodeContent = vm.QrCodeContent ?? "",
+            DeepSeekModels = DeepSeekModelNames.Normalize(vm.DeepSeekModels),
             CardIVersion = vm.CardIVersion,
             SchoolCalendarYear = vm.SchoolCalendarYear
         };
