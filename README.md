@@ -2,10 +2,11 @@
 The web server application of [THUInfo](https://github.com/thu-info-community/thu-info-app)
 # Build Instruction
 ## Step 1
-Install the .NET 10 SDK. The repository pins SDK `10.0.400` in `global.json` and permits rolling forward within the .NET 10 feature band.
+Install the .NET 11 SDK. The repository pins SDK `11.0.100` in `global.json` and permits rolling forward to later .NET 11 feature bands.
+On x64, .NET 11 requires an [x86-64-v2-compatible CPU](https://learn.microsoft.com/en-us/dotnet/core/compatibility/jit/11/minimum-hardware-requirements). The Docker images use .NET 11 on Ubuntu 26.04.
 If you are running RHEL or CentOS, just use
 ```
-$ sudo dnf install dotnet-sdk-10.0
+$ sudo dnf install dotnet-sdk-11.0
 ```
 Others should follow this [installation instruction](https://learn.microsoft.com/en-us/dotnet/core/install/linux)
 ## Step 2
